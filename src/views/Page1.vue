@@ -1,11 +1,11 @@
-<!-- src/App.vue -->
+<!-- src/views/Home.vue -->
 <template>
-  <div id="app">
+  <div class="home-container">
     <div class="header">
       <h1>欢迎使用PT插件管理器</h1>
     </div>
 
-    <div class="tab-container">
+    <div class="tab-wrapper">
       <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
         <el-tab-pane label="首页" name="LuckyDraw">
           <i class="fa fa-gift mr-2"></i>幸运抽奖
@@ -20,10 +20,10 @@
           <i class="fa fa-cog mr-2"></i>系统设置
         </el-tab-pane>
       </el-tabs>
+    </div>
 
-      <div class="content-container">
-        <router-view />
-      </div>
+    <div class="content-container">
+      <router-view />
     </div>
   </div>
 </template>
@@ -62,24 +62,26 @@ const handleTabClick = (tab: { name: string }) => {
 </script>
 
 <style scoped>
-#app {
+.home-container {
   max-width: 1400px;
   margin: 30px auto;
-  padding: 0 20px;
-  font-family: 'Microsoft YaHei', sans-serif;
+  padding: 30px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .header {
   text-align: center;
-  margin: 40px 0;
+  margin-bottom: 40px;
   color: #1e293b;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.tab-container {
+.tab-wrapper {
   margin-bottom: 30px;
 }
 
@@ -90,9 +92,9 @@ const handleTabClick = (tab: { name: string }) => {
 .el-tabs__item {
   font-size: 18px;
   font-weight: 500;
-  padding: 0 30px;
-  height: 55px;
-  line-height: 55px;
+  padding: 0 25px;
+  height: 50px;
+  line-height: 50px;
   color: #64748b;
   transition: all 0.3s ease;
 }
@@ -120,14 +122,14 @@ const handleTabClick = (tab: { name: string }) => {
 
 .content-container {
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  padding: 45px;
-  min-height: 700px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  min-height: 650px;
   transition: all 0.3s ease;
 }
 
 .mr-2 {
-  margin-right: 12px;
+  margin-right: 10px;
 }
 </style>

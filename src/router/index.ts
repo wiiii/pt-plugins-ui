@@ -1,14 +1,8 @@
 // src/router/index.ts
 import {createRouter, createWebHistory,} from 'vue-router';
-import Home from '../views/Home.vue';
 import LuckyDraw from '../views/LuckyDraw.vue';
 
 const routes: RouteRecordRaw[] = [
-    {
-        path: '/',
-        name: 'Home',
-        component: Home
-    },
     {
         path: '/lucky',
         name: 'LuckyDraw',
