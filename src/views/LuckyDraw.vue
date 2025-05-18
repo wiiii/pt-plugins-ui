@@ -1,12 +1,13 @@
+<!-- src/views/LuckyDraw.vue -->
 <template>
-  <el-card class="lucky-draw-card">
-    <template #header>
-      <div style="display: flex; justify-content: center; align-items: center;">
-        <h1 style="color: #409eff; margin-right: 10px;">幸运大转盘</h1>
-        <span>Powered By NexusPHP</span>
-      </div>
-    </template>
-    <div class="page-lucky-draw">
+  <div class="lucky-draw-container">
+    <el-card class="lucky-card">
+      <template #header>
+        <div class="card-header">
+          <h1>幸运大转盘</h1>
+        </div>
+      </template>
+
       <div class="draw-box">
         <canvas
             id="lotteryCanvas"
@@ -28,78 +29,59 @@
       <div class="sidebar-container">
         <!-- 左侧：基本说明和连抽 -->
         <div class="left-sidebar">
-          <div class="card-with-icon">
-            <div class="card-icon">
-              <i class="fa-solid fa-info"></i>
+          <el-card class="info-card">
+            <template #header>
+              <h2>基本说明</h2>
+            </template>
+            <div class="bonus">
+              <p>当前用户拥有魔力：<span class="highlight">{{ userTadpoles }}</span></p>
+              <p>每次抽奖需要魔力：{{ singleDrawCost }}</p>
             </div>
-            <el-card>
-              <template #header>
-                <div class="card-title">
-                  <h2 style="color: #333;">基本说明</h2>
-                </div>
-              </template>
-              <div class="bonus">
-                <p>当前用户拥有魔力：<span style="color: #ff6b6b;">{{ userTadpoles }}</span></p>
-                <p>每次抽奖需要魔力：{{ singleDrawCost }}</p>
-              </div>
-              <div class="other">
-                <el-collapse>
-                  <el-collapse-item title="中奖规则">
-                    <ul>
-                      <li><i class="fa-solid fa-star text-primary"></i> 当中奖 [VIP] 时，如果用户已经是 VIP 或以上等级，奖励魔力：250000</li>
-                      <li><i class="fa-solid fa-medal text-primary"></i> 当中奖 [勋章] 时，如果用户已经拥有勋章，奖励魔力：100000</li>
-                      <li><i class="fa-solid fa-pencil text-primary"></i> 当中奖 [改名卡] 时，多次数量不累计，可在个人详情页使用</li>
-                      <li><i class="fa-solid fa-rainbow text-primary"></i> 当中奖 [彩虹 ID] 时，多次时间累计</li>
-                    </ul>
-                  </el-collapse-item>
-                </el-collapse>
-              </div>
-            </el-card>
-          </div>
+            <div class="other">
+              <el-collapse>
+                <el-collapse-item title="中奖规则">
+                  <ul>
+                    <li><i class="fa-solid fa-star text-primary"></i> 当中奖 [VIP] 时，如果用户已经是 VIP 或以上等级，奖励魔力：250000</li>
+                    <li><i class="fa-solid fa-medal text-primary"></i> 当中奖 [勋章] 时，如果用户已经拥有勋章，奖励魔力：100000</li>
+                    <li><i class="fa-solid fa-pencil text-primary"></i> 当中奖 [改名卡] 时，多次数量不累计，可在个人详情页使用</li>
+                    <li><i class="fa-solid fa-rainbow text-primary"></i> 当中奖 [彩虹 ID] 时，多次时间累计</li>
+                  </ul>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
+          </el-card>
 
-          <div class="card-with-icon">
-            <div class="card-icon">
-              <i class="fa-solid fa-repeat"></i>
-            </div>
-            <el-card>
-              <template #header>
-                <div class="card-title">
-                  <h2 style="color: #333;">连抽</h2>
-                </div>
-              </template>
-              <div class="continuous">
-                <p>如果嫌一次次点击太慢，可以试试连抽</p>
-                <p>连抽消耗魔力 = 次数 × 每次抽奖需要魔力</p>
-                <p>连抽一次性返回全部结果</p>
-                <div class="continuous-btn-box">
-                  <el-button
-                      class="continuous-btn"
-                      @click="continuousDraw(5)"
-                  >
-                    <i class="fa-solid fa-play"></i> 5 连抽
-                  </el-button>
-                  <el-button
-                      class="continuous-btn"
-                      @click="continuousDraw(10)"
-                  >
-                    <i class="fa-solid fa-play"></i> 10 连抽
-                  </el-button>
-                </div>
+          <el-card class="continuous-card">
+            <template #header>
+              <h2>连抽</h2>
+            </template>
+            <div class="continuous">
+              <p>如果嫌一次次点击太慢，可以试试连抽</p>
+              <p>连抽消耗魔力 = 次数 × 每次抽奖需要魔力</p>
+              <p>连抽一次性返回全部结果</p>
+              <div class="continuous-btn-box">
+                <el-button
+                    class="continuous-btn"
+                    @click="continuousDraw(5)"
+                >
+                  <i class="fa-solid fa-play"></i> 5 连抽
+                </el-button>
+                <el-button
+                    class="continuous-btn"
+                    @click="continuousDraw(10)"
+                >
+                  <i class="fa-solid fa-play"></i> 10 连抽
+                </el-button>
               </div>
-            </el-card>
-          </div>
+            </div>
+          </el-card>
         </div>
 
         <!-- 右侧：抽奖记录 -->
-        <div class="right-sidebar card-with-icon">
-          <div class="card-icon">
-            <i class="fa-solid fa-history"></i>
-          </div>
+        <div class="right-sidebar">
           <el-card class="record-container">
             <template #header>
-              <div class="card-title">
-                <h2 style="color: #333;">抽奖记录</h2>
-              </div>
+              <h2>抽奖记录</h2>
             </template>
             <el-table :data="logs" stripe>
               <el-table-column
@@ -132,8 +114,8 @@
           </el-card>
         </div>
       </div>
-    </div>
-  </el-card>
+    </el-card>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -161,18 +143,9 @@ const lotteryConfig = ref({
   centerY: 300,
   startAngle: -90,
   colors: [
-    '#FFE4E1',
-    '#FFD700',
-    '#F0E68C',
-    '#90EE90',
-    '#87CEEB',
-    '#E6E6FA',
-    '#FFB6C1',
-    '#FFA500',
-    '#40E0D0',
-    '#EE82EE',
-    '#F08080',
-    '#483D8B',
+    '#FFE4E1', '#FFD700', '#F0E68C', '#90EE90',
+    '#87CEEB', '#E6E6FA', '#FFB6C1', '#FFA500',
+    '#40E0D0', '#EE82EE', '#F08080', '#483D8B',
   ],
   prizes: [
     'VIP\n奖励250000魔力',
@@ -295,7 +268,7 @@ const isDarkColor = (color: string) => {
   return false;
 };
 
-// 绘制指针（优化版）
+// 绘制指针
 const drawPointer = () => {
   if (!pointerCanvasRef.value) return;
   const ctx = pointerCanvasRef.value.getContext('2d');
@@ -305,28 +278,23 @@ const drawPointer = () => {
   const centerY = 100;
   const innerRadius = 300 - 280; // 转盘半径与指针画布中心的差值
 
-  // 60°角的三角箭头
-  const triangleSize = 45; // 调整箭头大小
-  const angle = 60 * Math.PI / 180; // 60°转换为弧度
-  const height = triangleSize; // 箭头高度
-  const base = height * Math.tan(angle / 2) * 2; // 箭头底部宽度
-
-  // 创建红色渐变
-  const gradient = ctx.createLinearGradient(
-      centerX - base / 2,
-      centerY - innerRadius,
-      centerX,
-      centerY - innerRadius - height
-  );
-  gradient?.addColorStop(0, '#FF7676'); // 浅红色
-  gradient?.addColorStop(1, '#E53935'); // 深红色
-
-  // 绘制三角箭头（只显示在转盘外部）
+  // 三角箭头
+  const triangleSize = 45;
   ctx.beginPath();
-  ctx.moveTo(centerX, centerY - innerRadius - height); // 箭头顶部
-  ctx.lineTo(centerX - base / 2, centerY - innerRadius); // 左下点
-  ctx.lineTo(centerX + base / 2, centerY - innerRadius); // 右下点
+  ctx.moveTo(centerX, centerY - innerRadius - triangleSize); // 箭头顶部
+  ctx.lineTo(centerX - triangleSize / 2, centerY - innerRadius); // 左下点
+  ctx.lineTo(centerX + triangleSize / 2, centerY - innerRadius); // 右下点
   ctx.closePath();
+
+  // 红色渐变
+  const gradient = ctx.createLinearGradient(
+      centerX - triangleSize / 2,
+      centerY - innerRadius - triangleSize,
+      centerX + triangleSize / 2,
+      centerY - innerRadius
+  );
+  gradient.addColorStop(0, '#FF5252');
+  gradient.addColorStop(1, '#FF1744');
 
   ctx.fillStyle = gradient;
   ctx.fill();
@@ -344,15 +312,6 @@ const drawPointer = () => {
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
   ctx.stroke();
-
-  // 绘制中心圆外部的虚线圆
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, buttonRadius * 1.1, 0, 2 * Math.PI);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([5, 3]);
-  ctx.stroke();
-  ctx.setLineDash([]);
 };
 
 // 开始抽奖
@@ -444,35 +403,44 @@ onMounted(() => {
 </script>
 
 <style scoped>
-body {
-  background-color: #7e65ab;
-  font-family: 'Microsoft YaHei', sans-serif;
+.lucky-draw-container {
+  margin: 0;
+  padding: 0;
 }
 
-.lucky-draw-card {
-  margin: 30px auto; /* 水平居中 */
-  max-width: 1200px; /* 最大宽度 */
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.lucky-card {
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
 }
 
-.page-lucky-draw {
-  padding: 30px;
+.card-header {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
+}
+
+h1 {
+  color: #409eff;
+  margin-right: 10px;
+  margin-bottom: 0;
+}
+
+.powered-by {
+  font-size: 14px;
+  color: #909399;
 }
 
 .draw-box {
   position: relative;
-  margin-top: 50px;
-  margin-bottom: 40px;
+  margin: 40px auto;
+  display: flex;
+  justify-content: center;
 }
 
 #lotteryCanvas {
   border-radius: 50%;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 #pointerCanvas {
@@ -484,122 +452,45 @@ body {
   z-index: 2;
 }
 
-.desc .bonus p,
-.desc .other p {
-  font-size: 16px;
-  color: #333;
-  line-height: 1.6;
-}
-
-.desc .bonus p:first-child {
-  color: #ff6b6b;
-  font-weight: 500;
-}
-
-.el-collapse-item__header {
-  background-color: #f8f9fa;
-  font-weight: 500;
-  border-radius: 8px;
-}
-
-.el-collapse-item__content {
-  padding: 15px 30px;
-}
-
-.continuous-btn {
-  margin-right: 20px;
-  padding: 8px 24px;
-  font-size: 16px;
-  border-radius: 4px;
-  background-color: #409eff;
-  color: white;
-}
-
-.el-table {
-  margin-top: 20px;
-  font-size: 14px;
-}
-
-.el-table__header th {
-  background-color: #f8f9fa;
-  font-weight: 500;
-}
-
-.el-pagination {
-  margin-top: 20px;
-  justify-content: center;
-}
-
 .sidebar-container {
   display: flex;
-  width: 100%;
-  max-width: 1200px;
-  gap: 30px;
-  flex-wrap: wrap; /* 允许换行 */
+  gap: 20px;
 }
 
 .left-sidebar {
   flex: 1;
-  min-width: 300px; /* 最小宽度 */
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
 }
 
 .right-sidebar {
-  flex: 2;
-  min-width: 300px; /* 最小宽度 */
-  display: flex;
-  flex-direction: column;
-}
-
-.record-container {
   flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
-.el-pagination {
-  margin-top: auto;
+.info-card, .continuous-card, .record-container {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-.card-with-icon {
-  position: relative;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ebedf0;
-}
-
-.card-with-icon .el-card__header {
-  background-color: #fafbfc;
-  border-radius: 12px 12px 0 0;
-  border-bottom: 1px solid #ebedf0;
-  padding: 16px 20px;
+.highlight {
+  color: #ff6b6b;
   font-weight: 500;
-  color: #333;
 }
 
-.card-icon {
-  position: absolute;
-  left: 16px;
-  top: 16px;
-  width: 32px;
-  height: 32px;
+.continuous-btn {
+  margin-right: 15px;
+  padding: 8px 20px;
   background-color: #409eff;
   color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 4px;
 }
 
-.card-title {
-  padding-left: 40px;
+.continuous-btn:hover {
+  background-color: #66b1ff;
 }
 
-@media (max-width: 768px) {
-  .sidebar-container {
-    flex-direction: column;
-  }
+.text-primary {
+  color: #409eff;
 }
 </style>
