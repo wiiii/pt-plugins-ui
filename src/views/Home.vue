@@ -29,6 +29,10 @@
         </el-tab-pane>
       </el-tabs>
     </div>
+
+    <div class="content-container">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
@@ -38,15 +42,18 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const activeTab = ref(route.name?.toString() || 'Home');
+const activeTab = ref(route.name?.toString() || 'LuckyDraw');
 
 // 监听路由变化，更新当前激活的标签
 const updateActiveTab = () => {
-  activeTab.value = route.name?.toString() || 'Home';
+  activeTab.value = route.name?.toString() || 'LuckyDraw';
 };
 
 onMounted(() => {
   updateActiveTab();
+  if (!route.name) {
+    router.push({ name: 'LuckyDraw' });
+  }
 });
 
 // 监听标签切换事件
@@ -57,48 +64,46 @@ const handleTabClick = (tab: string) => {
 
 <style scoped>
 .home-container {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 40px;
+  max-width: 1400px;
   margin: 0 auto;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
+  color: #333;
+  font-size: 32px;
+  font-weight: bold;
 }
 
 .tab-container {
-  margin-bottom: 30px;
-}
-
-.content {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  min-height: 300px;
-}
-
-.feature-cards {
+  margin-bottom: 40px;
   display: flex;
-  gap: 20px;
-  margin-top: 30px;
+  justify-content: center;
 }
 
-.feature-card {
-  flex: 1;
+.el-tabs__item {
+  font-size: 18px;
+  font-weight: 500;
+  color: #6c757d;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-}
-
-.card-header i {
-  margin-right: 10px;
+.el-tabs__item.is-active {
   color: #409eff;
 }
 
+.content-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+}
+
 .mr-2 {
-  margin-right: 8px;
+  margin-right: 12px;
 }
 </style>

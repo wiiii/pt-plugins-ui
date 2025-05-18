@@ -328,60 +328,24 @@ const drawPointer = () => {
   ctx.lineTo(centerX + base / 2, centerY - innerRadius); // 右下点
   ctx.closePath();
 
-  // 填充渐变
-  ctx.fillStyle = gradient as CanvasGradient;
+  ctx.fillStyle = gradient;
   ctx.fill();
 
-  // 添加阴影效果
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 3;
-
-  // 绘制箭头边框（使用白色渐变增加立体感）
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = '#FFFFFF';
-  ctx.stroke();
-
-  // 绘制中心按钮（稍小一点）
-  const buttonRadius = 40; // 调整按钮大小
-
-  // 创建按钮渐变（更美观的蓝色渐变）
-  const buttonGradient = ctx.createRadialGradient(
-      centerX,
-      centerY,
-      buttonRadius * 0.3,
-      centerX,
-      centerY,
-      buttonRadius
-  );
-  buttonGradient?.addColorStop(0, '#64B5F6'); // 浅蓝色
-  buttonGradient?.addColorStop(1, '#1976D2'); // 深蓝色
-
+  // 绘制中心圆
+  const buttonRadius = 20;
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
-  ctx.fillStyle = buttonGradient as CanvasGradient;
+  ctx.fillStyle = '#ffffff';
   ctx.fill();
 
-  // 按钮边框
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = '#FFFFFF';
+  // 绘制中心圆的金色边框
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#FFD700';
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
   ctx.stroke();
 
-  // 按钮内部的圆形装饰
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, buttonRadius * 0.7, 0, 2 * Math.PI);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.fill();
-
-  // 中心文字
-  ctx.font = 'bold 18px Microsoft YaHei';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('开始', centerX, centerY);
-
-  // 添加按钮悬停状态的提示（实际交互由CSS处理）
+  // 绘制中心圆外部的虚线圆
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius * 1.1, 0, 2 * Math.PI);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
@@ -486,7 +450,8 @@ body {
 }
 
 .lucky-draw-card {
-  margin: 30px;
+  margin: 30px auto; /* 水平居中 */
+  max-width: 1200px; /* 最大宽度 */
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -570,10 +535,12 @@ body {
   width: 100%;
   max-width: 1200px;
   gap: 30px;
+  flex-wrap: wrap; /* 允许换行 */
 }
 
 .left-sidebar {
   flex: 1;
+  min-width: 300px; /* 最小宽度 */
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -581,6 +548,7 @@ body {
 
 .right-sidebar {
   flex: 2;
+  min-width: 300px; /* 最小宽度 */
   display: flex;
   flex-direction: column;
 }
@@ -623,8 +591,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  z-index: 10;
 }
 
 .card-title {
