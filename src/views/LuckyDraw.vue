@@ -41,9 +41,13 @@
               <el-collapse>
                 <el-collapse-item title="中奖规则">
                   <ul>
-                    <li><i class="fa-solid fa-star text-primary"></i> 当中奖 [VIP] 时，如果用户已经是 VIP 或以上等级，奖励魔力：250000</li>
-                    <li><i class="fa-solid fa-medal text-primary"></i> 当中奖 [勋章] 时，如果用户已经拥有勋章，奖励魔力：100000</li>
-                    <li><i class="fa-solid fa-pencil text-primary"></i> 当中奖 [改名卡] 时，多次数量不累计，可在个人详情页使用</li>
+                    <li><i class="fa-solid fa-star text-primary"></i> 当中奖 [VIP] 时，如果用户已经是 VIP
+                      或以上等级，奖励魔力：250000
+                    </li>
+                    <li><i class="fa-solid fa-medal text-primary"></i> 当中奖 [勋章] 时，如果用户已经拥有勋章，奖励魔力：100000
+                    </li>
+                    <li><i class="fa-solid fa-pencil text-primary"></i> 当中奖 [改名卡] 时，多次数量不累计，可在个人详情页使用
+                    </li>
                     <li><i class="fa-solid fa-rainbow text-primary"></i> 当中奖 [彩虹 ID] 时，多次时间累计</li>
                   </ul>
                 </el-collapse-item>
@@ -119,8 +123,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
+import {ref, onMounted} from 'vue';
+import {ElMessage} from 'element-plus';
 
 // 基础数据
 const userTadpoles = ref(381744.3);
@@ -170,13 +174,13 @@ const pointerCanvasRef = ref<HTMLCanvasElement | null>(null);
 const drawLottery = () => {
   if (!lotteryCanvasRef.value) return;
   const ctx = lotteryCanvasRef.value.getContext('2d');
-  const { centerX, centerY, radius, startAngle, colors, prizes } = lotteryConfig.value;
+  const {centerX, centerY, radius, startAngle, colors, prizes} = lotteryConfig.value;
 
   // 背景圆
   ctx.clearRect(0, 0, 600, 600);
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#1f3285';
   ctx.fill();
   ctx.lineWidth = 8;
   ctx.strokeStyle = '#7e65ab';
@@ -276,43 +280,41 @@ const drawPointer = () => {
 
   const centerX = 100;
   const centerY = 100;
-  const innerRadius = 300 - 280; // 转盘半径与指针画布中心的差值
+  const buttonRadius = 50;
+  const triangleSize = 24;
 
-  // 三角箭头
-  const triangleSize = 45;
+  // 1. 绘制三角箭头（完全隐藏在圆下）
   ctx.beginPath();
-  ctx.moveTo(centerX, centerY - innerRadius - triangleSize); // 箭头顶部
-  ctx.lineTo(centerX - triangleSize / 2, centerY - innerRadius); // 左下点
-  ctx.lineTo(centerX + triangleSize / 2, centerY - innerRadius); // 右下点
+  ctx.moveTo(centerX, centerY - 80);
+  ctx.lineTo(centerX - triangleSize / 2, centerY - 50);
+  ctx.lineTo(centerX + triangleSize / 2, centerY - 50);
   ctx.closePath();
 
-  // 红色渐变
+  // 2. 绘制中心圆（完全覆盖三角顶部）
   const gradient = ctx.createLinearGradient(
       centerX - triangleSize / 2,
-      centerY - innerRadius - triangleSize,
+      centerY - 120,
       centerX + triangleSize / 2,
-      centerY - innerRadius
+      centerY - 50
   );
   gradient.addColorStop(0, '#FF5252');
   gradient.addColorStop(1, '#FF1744');
-
   ctx.fillStyle = gradient;
   ctx.fill();
 
-  // 绘制中心圆
-  const buttonRadius = 20;
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#341f97';
   ctx.fill();
 
-  // 绘制中心圆的金色边框
+  // 3. 描边
   ctx.lineWidth = 4;
   ctx.strokeStyle = '#FFD700';
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
   ctx.stroke();
 };
+
 
 // 开始抽奖
 const startLottery = () => {
@@ -409,7 +411,7 @@ onMounted(() => {
 }
 
 .lucky-card {
-  border-radius: 0;
+  border-radius: 8px;
   border: none;
   box-shadow: none;
 }
@@ -453,19 +455,36 @@ h1 {
 }
 
 .sidebar-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
 }
 
 .left-sidebar {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
 .right-sidebar {
-  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .record-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .el-table {
+    flex: 1;
+    min-height: 400px;
+  }
+
+  .el-pagination {
+    margin-top: auto;
+  }
 }
 
 .info-card, .continuous-card, .record-container {
