@@ -10,6 +10,7 @@
         :default-active="activeMenu"
         :default-openeds="['1']"
         :collapse="isCollapsed"
+        @select="handleMenuSelect"
         :collapse-transition="false"
         mode="vertical"
         background-color="#2c3e50"
@@ -33,24 +34,27 @@
 
 <script setup>
 import {ref, watchEffect} from 'vue';
-import {useRoute} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
+const emit = defineEmits(['menu-click']);
 
 const route = useRoute();
+const router = useRouter();
 const isCollapsed = ref(false);
-const activeMenu = ref('lottery'); // 默认激活抽奖管理
+const activeMenu = ref('lucky'); // 默认激活抽奖管理
 
 // 根据当前路由自动更新活跃菜单
 watchEffect(() => {
-  activeMenu.value = route.name || 'lottery';
+  activeMenu.value = route.name || 'lucky'
 });
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
 };
 
-const handleMenuClick = (item) => {
-  // 路由跳转逻辑
-  console.log('导航到:', item.index);
+const handleMenuSelect = (index, indexPath) => {
+  console.log('选中菜单项 index:', index);
+  emit('menu-click', index);
+  router.push({ name: index });
 };
 </script>
 

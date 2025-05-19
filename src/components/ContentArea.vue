@@ -8,7 +8,7 @@
       </el-breadcrumb>
     </div>
 
-    <router-view />
+    <router-view></router-view>
   </el-main>
 </template>
 
@@ -22,7 +22,7 @@ const pageTitle = computed(() => {
     lucky: '幸运大转盘',
     bank: '银行管理中心',
   };
-  return titleMap[route.name] || '管理后台';
+  return titleMap[route.name] || '幸运大转盘';
 });
 </script>
 

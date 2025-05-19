@@ -1,4 +1,8 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import {createRouter, createWebHashHistory} from 'vue-router';
+
+import LuckyDraw from '../views/LuckyDraw.vue';
+import Bank from '../views/Bank.vue';
+
 
 const routes = [
     {
@@ -8,12 +12,12 @@ const routes = [
     {
         path: '/lucky',
         name: 'lucky',
-        component: () => import('../views/LuckyDraw.vue')
+        component: LuckyDraw
     },
     {
         path: '/bank',
         name: 'bank',
-        component: () => import('../views/Bank.vue')
+        component: Bank
     },
 ];
 

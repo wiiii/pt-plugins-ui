@@ -2,42 +2,16 @@
 <template>
   <div class="home-container">
     <div class="header">
-      <h1>欢迎使用PT插件管理器</h1>
+      <h1>银行管理中心</h1>
+    </div>
+    <div class="tab-wrapper">
+      少时诵诗书纹
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute();
-const router = useRouter();
-const activeTab = ref('LuckyDraw');
-
-// 初始化并确保默认路由
-onMounted(() => {
-  if (!route.name) {
-    router.push({ name: 'LuckyDraw' });
-  } else {
-    activeTab.value = route.name as string;
-  }
-});
-
-// 监听路由变化，更新标签页
-watch(
-    () => route.name,
-    (newName) => {
-      if (newName) {
-        activeTab.value = newName as string;
-      }
-    }
-);
-
-// 标签页点击事件
-const handleTabClick = (tab: { name: string }) => {
-  router.push({ name: tab.name });
-};
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <template>
   <el-container class="main-container">
-    <Sidebar @menu-click="handleMenuClick" />
+    <Sidebar @menu-click="handleMenuClick"/>
     <el-container>
       <el-header class="app-header">
         <div class="logo" v-show="!isCollapsed">PT 管理系统</div>
@@ -11,22 +11,21 @@
             @click="toggleCollapse"
         />
       </el-header>
-      <ContentArea />
+      <ContentArea/>
     </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref} from 'vue';
 import Sidebar from './components/Sidebar.vue';
 import ContentArea from './components/ContentArea.vue';
 
 const isCollapsed = ref(false);
 const toggleCollapse = () => (isCollapsed.value = !isCollapsed.value);
 
-const handleMenuClick = (path) => {
+const handleMenuClick = (path: any) => {
   // 这里可以替换为实际路由跳转
-  debugger;
   console.log('导航到:', path);
 };
 </script>
