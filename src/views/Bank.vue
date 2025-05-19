@@ -4,27 +4,6 @@
     <div class="header">
       <h1>欢迎使用PT插件管理器</h1>
     </div>
-
-    <div class="tab-wrapper">
-      <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
-        <el-tab-pane label="首页" name="LuckyDraw">
-          <i class="fa fa-gift mr-2"></i>幸运抽奖
-        </el-tab-pane>
-        <el-tab-pane label="页面一" name="Page1">
-          <i class="fa fa-list-alt mr-2"></i>任务列表
-        </el-tab-pane>
-        <el-tab-pane label="页面二" name="Page2">
-          <i class="fa fa-bar-chart mr-2"></i>统计数据
-        </el-tab-pane>
-        <el-tab-pane label="页面三" name="Page3">
-          <i class="fa fa-cog mr-2"></i>系统设置
-        </el-tab-pane>
-      </el-tabs>
-    </div>
-
-    <div class="content-container">
-      <router-view />
-    </div>
   </div>
 </template>
 

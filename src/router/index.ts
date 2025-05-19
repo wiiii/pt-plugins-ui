@@ -1,32 +1,24 @@
-// src/router/index.ts
-import {createRouter, createWebHistory,} from 'vue-router';
-import LuckyDraw from '../views/LuckyDraw.vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
-const routes: RouteRecordRaw[] = [
+const routes = [
+    {
+        path: '/',
+        redirect: '/lucky' // 默认重定向到抽奖页面
+    },
     {
         path: '/lucky',
-        name: 'LuckyDraw',
-        component: LuckyDraw
+        name: 'lucky',
+        component: () => import('../views/LuckyDraw.vue')
     },
-    // {
-    //     path: '/page1',
-    //     name: 'Page1',
-    //     component: Page1
-    // },
-    // {
-    //     path: '/page2',
-    //     name: 'Page2',
-    //     component: Page2
-    // },
-    // {
-    //     path: '/page3',
-    //     name: 'Page3',
-    //     component: Page3
-    // }
+    {
+        path: '/bank',
+        name: 'bank',
+        component: () => import('../views/Bank.vue')
+    },
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes
 });
 
