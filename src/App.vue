@@ -3,7 +3,7 @@
     <Sidebar @menu-click="handleMenuClick"/>
     <el-container>
       <el-header class="app-header">
-        <div class="logo" v-show="!isCollapsed">PT 管理系统</div>
+        <div class="logo" v-show="!isCollapsed">PT 插件系统</div>
         <el-button
             v-show="isCollapsed"
             type="primary"

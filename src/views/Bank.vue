@@ -1,88 +1,89 @@
-<!-- src/views/Home.vue -->
 <template>
-  <div class="home-container">
-    <div class="header">
-      <h1>银行管理中心</h1>
-    </div>
-    <div class="tab-wrapper">
-      少时诵诗书纹
-    </div>
+  <div class="bank-page">
+    <el-container style="min-height: 100vh;">
+      <el-main class="main-content">
+        <el-row :gutter="20">
+          <!-- 左侧账户信息 -->
+          <el-col :span="8" :xs="24" :sm="8" :md="6" :lg="6" :xl="5">
+            <AccountInfo :account-info="accountInfo"/>
+            <BankStats :bank-stats="bankStats"/>
+          </el-col>
+
+          <!-- 右侧 Tab 内容 -->
+          <el-col :span="16" :xs="24" :sm="16" :md="18" :lg="18" :xl="19">
+            <el-tabs v-model="activeTab" type="card">
+              <el-tab-pane label="ATM操作台" name="atm">
+                <ATMForm/>
+              </el-tab-pane>
+              <el-tab-pane label="存取流水" name="transaction">
+                <TransactionTable/>
+              </el-tab-pane>
+              <el-tab-pane label="利息流水" name="interest">
+                <InterestTable/>
+              </el-tab-pane>
+              <el-tab-pane label="贷款记录" name="loan">
+                <LoanTable/>
+              </el-tab-pane>
+            </el-tabs>
+          </el-col>
+        </el-row>
+      </el-main>
+    </el-container>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import {ref} from 'vue'
+import AccountInfo from '@/components/bank/AccountInfo.vue'
+import BankStats from '@/components/bank/BankStats.vue'
+import ATMForm from '@/components/bank/ATMForm.vue'
+import TransactionTable from '@/components/bank/TransactionTable.vue'
+import InterestTable from '@/components/bank/InterestTable.vue'
+import LoanTable from '@/components/bank/LoanTable.vue'
 
+const activeTab = ref('atm')
+
+// 示例数据（可根据接口动态加载）
+const accountInfo = ref({
+  userName: '星陨阁管理员',
+  seedBonus: '1,234.56',
+  depositMana: '5,000.00',
+  depositInterest: '32.50',
+  loanMana: '0.00',
+  createTime: new Date().getTime()
+})
+
+const bankStats = ref({
+  totalMagicPool: '1,234,567.89',
+  totalUserNum: '1234',
+  totalDepositNum: '987',
+  totalLoanNum: '123',
+  totalDeposit: '5,678,900.00',
+  depositRate: 6,
+  totalLoan: '1,234,500.00',
+  interestRate: 18
+})
 </script>
 
 <style scoped>
-.home-container {
-  max-width: 1400px;
-  margin: 30px auto;
-  padding: 30px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-}
 
 .header {
+  background: linear-gradient(120deg, #2b4b80 0%, #1a365d 100%);
+  color: white;
   text-align: center;
-  margin-bottom: 40px;
-  color: #1e293b;
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
 }
 
-.tab-wrapper {
-  margin-bottom: 30px;
+.el-main{
+  padding: 0px;
 }
 
-.el-tabs__header {
-  margin: 0 0 20px 0;
+.header h1 {
+  margin: 0;
+  font-size: 24px;
 }
 
-.el-tabs__item {
-  font-size: 18px;
-  font-weight: 500;
-  padding: 0 25px;
-  height: 50px;
-  line-height: 50px;
-  color: #64748b;
-  transition: all 0.3s ease;
-}
-
-.el-tabs__item:hover {
-  color: #0f766e;
-  transform: translateY(-2px);
-}
-
-.el-tabs__item.is-active {
-  color: #0f766e;
-  font-weight: 600;
-  border-bottom: 3px solid #0f766e;
-}
-
-.el-tabs__active-bar {
-  background-color: #0f766e;
-  height: 3px;
-}
-
-.el-tabs--border-card {
-  border: none;
-  background: none;
-}
-
-.content-container {
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  padding: 40px;
-  min-height: 650px;
-  transition: all 0.3s ease;
-}
-
-.mr-2 {
-  margin-right: 10px;
+.main-content {
+  background-color: #f5f7fa;
 }
 </style>

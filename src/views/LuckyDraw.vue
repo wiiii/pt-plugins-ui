@@ -112,7 +112,7 @@
                 :current-page="currentPage"
                 :page-sizes="[10, 25, 50, 100]"
                 :page-size="pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
+                layout="total, sizes, prev, pager, next"
                 :total="logs.length"
             ></el-pagination>
           </el-card>
@@ -283,37 +283,42 @@ const drawPointer = () => {
   const buttonRadius = 50;
   const triangleSize = 24;
 
-  // 1. 绘制三角箭头（完全隐藏在圆下）
+  // 1. 绘制三角箭头（隐藏在圆下）
   ctx.beginPath();
   ctx.moveTo(centerX, centerY - 80);
   ctx.lineTo(centerX - triangleSize / 2, centerY - 50);
   ctx.lineTo(centerX + triangleSize / 2, centerY - 50);
   ctx.closePath();
 
-  // 2. 绘制中心圆（完全覆盖三角顶部）
-  const gradient = ctx.createLinearGradient(
+  const arrowGradient = ctx.createLinearGradient(
       centerX - triangleSize / 2,
       centerY - 120,
       centerX + triangleSize / 2,
       centerY - 50
   );
-  gradient.addColorStop(0, '#FF5252');
-  gradient.addColorStop(1, '#FF1744');
-  ctx.fillStyle = gradient;
+  arrowGradient.addColorStop(0, '#FF5252');
+  arrowGradient.addColorStop(1, '#FF1744');
+  ctx.fillStyle = arrowGradient;
   ctx.fill();
+
+  // 2. 中心圆（渐变色）
+  const circleGradient = ctx.createLinearGradient(0, centerY - buttonRadius, 0, centerY + buttonRadius);
+  circleGradient.addColorStop(0, '#4a90e2');
+  circleGradient.addColorStop(1, '#2c57a0');
 
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
-  ctx.fillStyle = '#341f97';
+  ctx.fillStyle = circleGradient;
   ctx.fill();
 
-  // 3. 描边
-  ctx.lineWidth = 4;
+  // 3. 外圈描边
   ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.arc(centerX, centerY, buttonRadius, 0, 2 * Math.PI);
   ctx.stroke();
 };
+
 
 
 // 开始抽奖
@@ -483,9 +488,15 @@ h1 {
   }
 
   .el-pagination {
-    margin-top: auto;
+    margin-top: 10px;
   }
 }
+
+.el-input__inner {
+  height: 26px !important;
+  line-height: 26px;
+}
+
 
 .info-card, .continuous-card, .record-container {
   border-radius: 8px;
