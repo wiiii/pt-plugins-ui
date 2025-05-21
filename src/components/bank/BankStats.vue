@@ -66,10 +66,11 @@ defineProps<{
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr); /* 每行显示 2 个卡片 */
+  gap: 16px; /* 卡片之间的间距 */
   margin-bottom: 20px;
 }
+
 
 .stat-card {
   background-color: #f8f8f8;
@@ -104,7 +105,7 @@ defineProps<{
 }
 
 .info-table td {
-  padding: 12px 10px;
+  padding: 10px 10px;
   border-bottom: 1px solid #eee;
 }
 

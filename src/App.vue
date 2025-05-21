@@ -11,15 +11,15 @@
             @click="toggleCollapse"
         />
       </el-header>
-      <ContentArea/>
+      <ContentArea class="content-wrapper"/>
     </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
 import {ref} from 'vue';
-import Sidebar from './components/Sidebar.vue';
-import ContentArea from './components/ContentArea.vue';
+import Sidebar from '@/components/Sidebar.vue';
+import ContentArea from '@/components/ContentArea.vue';
 
 const isCollapsed = ref(false);
 const toggleCollapse = () => (isCollapsed.value = !isCollapsed.value);
@@ -31,6 +31,11 @@ const handleMenuClick = (path: any) => {
 </script>
 
 <style scoped>
+
+body {
+  margin: 0;
+}
+
 .main-container {
   min-width: 1200px;
   height: 100vh;

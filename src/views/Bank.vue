@@ -1,35 +1,33 @@
 <template>
-  <div class="bank-page">
-    <el-container style="min-height: 100vh;">
-      <el-main class="main-content">
-        <el-row :gutter="20">
-          <!-- 左侧账户信息 -->
-          <el-col :span="8" :xs="24" :sm="8" :md="6" :lg="6" :xl="5">
-            <AccountInfo :account-info="accountInfo"/>
-            <BankStats :bank-stats="bankStats"/>
-          </el-col>
+  <el-container style="min-height: 100vh;">
+    <el-main class="main-content">
+      <el-row :gutter="20">
+        <!-- 左侧账户信息 -->
+        <el-col :span="8" :xs="24" :sm="8" :md="8" :lg="8" :xl="5">
+          <AccountInfo :account-info="accountInfo"/>
+          <BankStats :bank-stats="bankStats"/>
+        </el-col>
 
-          <!-- 右侧 Tab 内容 -->
-          <el-col :span="16" :xs="24" :sm="16" :md="18" :lg="18" :xl="19">
-            <el-tabs v-model="activeTab" type="card">
-              <el-tab-pane label="ATM操作台" name="atm">
-                <ATMForm/>
-              </el-tab-pane>
-              <el-tab-pane label="存取流水" name="transaction">
-                <TransactionTable/>
-              </el-tab-pane>
-              <el-tab-pane label="利息流水" name="interest">
-                <InterestTable/>
-              </el-tab-pane>
-              <el-tab-pane label="贷款记录" name="loan">
-                <LoanTable/>
-              </el-tab-pane>
-            </el-tabs>
-          </el-col>
-        </el-row>
-      </el-main>
-    </el-container>
-  </div>
+        <!-- 右侧 Tab 内容 -->
+        <el-col :span="16" :xs="24" :sm="16" :md="16" :lg="16" :xl="19">
+          <el-tabs v-model="activeTab" type="card">
+            <el-tab-pane label="ATM操作台" name="atm">
+              <ATMForm/>
+            </el-tab-pane>
+            <el-tab-pane label="存取流水" name="transaction">
+              <TransactionTable/>
+            </el-tab-pane>
+            <el-tab-pane label="利息流水" name="interest">
+              <InterestTable/>
+            </el-tab-pane>
+            <el-tab-pane label="贷款记录" name="loan">
+              <LoanTable/>
+            </el-tab-pane>
+          </el-tabs>
+        </el-col>
+      </el-row>
+    </el-main>
+  </el-container>
 </template>
 
 <script setup lang="ts">
@@ -74,7 +72,11 @@ const bankStats = ref({
   padding: 20px;
 }
 
-.el-main{
+.el-container {
+  overflow-x: hidden;
+}
+
+.el-main {
   padding: 0px;
 }
 
