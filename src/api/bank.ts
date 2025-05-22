@@ -1,72 +1,56 @@
-import axios from 'axios'
+// src/api/bank.ts
+import BaseApi from './base-api'
 
-// 定义API接口类型
-interface BankAPI {
-    getUserBankInfo: string;
-    checkAccount: string;
-    createAccount: string;
-    deposit: string;
-    withdraw: string;
-    loanAdd: string;
-    loanPageList: string;
-    getDepositAndDrawnRecords: string;
-    getInterestRecords: string;
-    getBankStatInfo: string;
-}
+// 银行模块 API 实例
+const bankApi = new BaseApi('/pt-api/v1')
 
-// 创建axios实例
-const apiClient = axios.create({
-    baseURL: '/bank-api/v1',
-    timeout: 10000,
-})
-
-// 定义请求类型
+// 导出银行相关接口
 export type PageParams = {
-    pageNum: number;
-    pageSize: number;
+  pageNum: number
+  pageSize: number
 }
 
 export type LoanParams = {
-    loanAmt: number;
-    loanTerm: number;
+  loanAmt: number
+  loanTerm: number
 }
 
-// API定义
-const API: BankAPI = {
-    getUserBankInfo: '/bank/getUserBankDetail',
-    checkAccount: '/bankUserDetail/checkHadAccount',
-    createAccount: '/bankUserDetail/createAccount',
-    deposit: '/bank/deposit',
-    withdraw: '/bank/drawn',
-    loanAdd: '/bankLoanInfo/add',
-    loanPageList: '/bankLoanInfo/pageList',
-    getDepositAndDrawnRecords: '/bank/getDepositAndDrawnRecords',
-    getInterestRecords: '/bankInterest/pageList',
-    getBankStatInfo: '/bank/getBankStatInfo'
+// 接口路径
+const API = {
+  getUserBankInfo: '/bank/getUserBankDetail',
+  checkAccount: '/bankUserDetail/checkHadAccount',
+  createAccount: '/bankUserDetail/createAccount',
+  deposit: '/bank/deposit',
+  withdraw: '/bank/drawn',
+  loanAdd: '/bankLoanInfo/add',
+  loanPageList: '/bankLoanInfo/pageList',
+  getDepositAndDrawnRecords: '/bank/getDepositAndDrawnRecords',
+  getInterestRecords: '/bankInterest/pageList',
+  getBankStatInfo: '/bank/getBankStatInfo'
 }
 
-// API请求方法
-export const checkAccount = () => apiClient.get(API.checkAccount)
-export const createUserAccount = () => apiClient.post(API.createAccount)
-export const getUserBankDetail = () => apiClient.get(API.getUserBankInfo)
-export const getBankStatInfo = () => apiClient.get(API.getBankStatInfo)
+// 封装接口调用
+export const checkAccount = () => bankApi.get<void>(API.checkAccount)
+export const createUserAccount = () => bankApi.post<void>(API.createAccount)
+export const getUserBankDetail = () => bankApi.get<any>(API.getUserBankInfo)
+export const getBankStatInfo = () => bankApi.get<any>(API.getBankStatInfo)
 
 export const getDepositAndDrawnRecords = (params: PageParams) =>
-    apiClient.post(API.getDepositAndDrawnRecords, params)
+  bankApi.post<any>(API.getDepositAndDrawnRecords, params)
 
 export const getInterestRecords = (params: PageParams) =>
-    apiClient.post(API.getInterestRecords, params)
+  bankApi.post<any>(API.getInterestRecords, params)
 
 export const getLoanRecords = (params: PageParams) =>
-    apiClient.post(API.loanPageList, params)
+  bankApi.post<any>(API.loanPageList, params)
 
 export const deposit = (amount: number) =>
-    apiClient.post(API.deposit, { amount })
+  bankApi.post<void>(API.deposit, { amount })
 
 export const withdraw = (amount: number) =>
-    apiClient.post(API.withdraw, { amount })
+  bankApi.post<void>(API.withdraw, { amount })
 
 export const loan = (params: LoanParams) =>
-    apiClient.post(API.loanAdd, params)
+  bankApi.post<void>(API.loanAdd, params)
 
-export default API
+export default bankApi
