@@ -50,10 +50,36 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  bankStats: any
-}>()
+import { ref, onMounted } from 'vue'
+import { getBankStatInfo } from '@/api/bank'
+
+interface BankStats {
+  totalMagicPool?: number
+  totalUserNum?: number
+  totalDepositNum?: number
+  totalLoanNum?: number
+  totalDeposit?: number
+  depositRate?: number
+  totalLoan?: number
+  interestRate?: number
+}
+
+const bankStats = ref<BankStats>({})
+
+const fetchBankStatInfo = async () => {
+  try {
+    const res = await getBankStatInfo()
+    bankStats.value = res || {}
+  } catch (error) {
+    console.error('获取银行统计数据失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchBankStatInfo()
+})
 </script>
+
 
 <style scoped>
 .section-title {

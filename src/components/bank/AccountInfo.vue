@@ -9,7 +9,7 @@
       <tbody>
       <tr v-if="loading">
         <td colspan="2" style="text-align:center; padding: 20px;">
-          <el-spin />
+          <el-spin/>
           加载中...
         </td>
       </tr>
@@ -51,9 +51,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { getUserBankDetail } from '@/api/bank'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { checkAccount, createUserAccount, getUserBankDetail } from '@/api/bank'
 import { formatDate } from '@/utils/date'
+import { ElMessage } from "element-plus";
+import { eventBus } from '@/utils/eventBus' // 导入事件总线
 
 interface AccountInfo {
   userName?: string
@@ -68,20 +70,46 @@ const accountInfo = ref<AccountInfo>({})
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-async function fetchAccountInfo() {
+async function initAccountInfo() {
   try {
-    const data = await getUserBankDetail()
-    accountInfo.value = data || {}
-    loading.value = false
+    const hasAccount = await checkAccount()
+    let data: AccountInfo = {}
+
+    if (hasAccount.code !== 0 || !hasAccount.data) {
+      const createResult = await createUserAccount()
+      if (createResult.code !== 0) {
+        ElMessage.error(createResult.msg)
+      } else {
+        ElMessage.success('恭喜!账户自动创建成功!')
+      }
+    } else {
+      const userBankDetailData = await getUserBankDetail()
+      if (userBankDetailData.code == 0) {
+        data = userBankDetailData.data
+      } else {
+        ElMessage.error(userBankDetailData.msg);
+      }
+      accountInfo.value = data
+      error.value = null
+    }
   } catch (err: any) {
-    console.error('获取账户信息失败:', err)
+    console.error('初始化账户信息失败:', err)
     error.value = '加载账户信息失败，请刷新重试'
+  } finally {
     loading.value = false
   }
 }
 
 onMounted(() => {
-  fetchAccountInfo()
+  initAccountInfo()
+
+  // 监听刷新事件
+  eventBus.on('refreshAccount', initAccountInfo)
+})
+
+onBeforeUnmount(() => {
+  // 组件卸载时移除监听器
+  eventBus.off('refreshAccount', initAccountInfo)
 })
 </script>
 

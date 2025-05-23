@@ -5,6 +5,7 @@ import type {
     AxiosRequestConfig,
     AxiosResponse
 } from 'axios'
+import {ElMessage} from "element-plus";
 
 // 定义基础请求参数类型
 export interface BaseApiResponse<T = any> {
@@ -48,15 +49,15 @@ class BaseApi {
             }
         )
         // 响应拦截器
+        // 响应拦截器
         this.instance.interceptors.response.use(
-            (response: AxiosResponse<BaseApiResponse>) => {
-                const res = response.data
+            (response: AxiosResponse<any>) => {
+                const res = response.data;
                 if (res.code !== 0) {
-                    // 可以做全局提示或跳转登录等操作
-                    console.error('[响应业务错误]', res.message)
-                    return Promise.reject(new Error(res.message || 'Error'))
+                    ElMessage.error(res.msg || '操作失败')
+                    return null
                 }
-                return res.data
+                return res;
             },
             (error) => {
                 console.error('[响应网络错误]', error)
@@ -66,26 +67,17 @@ class BaseApi {
     }
 
     // 通用请求方法
-    get<T = any>(url
-                 :
-                 string, config ?: AxiosRequestConfig
-    ):
+    get<T = any>(url: string, config ?: AxiosRequestConfig):
         Promise<T> {
         return this.instance.get(url, config)
     }
 
-    post<T = any>(url
-                  :
-                  string, data ?: any, config ?: AxiosRequestConfig
-    ):
+    post<T = any>(url: string, data ?: any, config ?: AxiosRequestConfig):
         Promise<T> {
         return this.instance.post(url, data, config)
     }
 
-    put<T = any>(url
-                 :
-                 string, data ?: any, config ?: AxiosRequestConfig
-    ):
+    put<T = any>(url: string, data ?: any, config ?: AxiosRequestConfig):
         Promise<T> {
         return this.instance.put(url, data, config)
     }

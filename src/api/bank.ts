@@ -21,7 +21,7 @@ const API = {
   checkAccount: '/bankUserDetail/checkHadAccount',
   createAccount: '/bankUserDetail/createAccount',
   deposit: '/bank/deposit',
-  withdraw: '/bank/drawn',
+  drawn: '/bank/drawn',
   loanAdd: '/bankLoanInfo/add',
   loanPageList: '/bankLoanInfo/pageList',
   getDepositAndDrawnRecords: '/bank/getDepositAndDrawnRecords',
@@ -47,8 +47,8 @@ export const getLoanRecords = (params: PageParams) =>
 export const deposit = (amount: number) =>
   bankApi.post<void>(API.deposit, { amount })
 
-export const withdraw = (amount: number) =>
-  bankApi.post<void>(API.withdraw, { amount })
+export const drawn = (amount: number) =>
+  bankApi.post<void>(API.drawn, { amount })
 
 export const loan = (params: LoanParams) =>
   bankApi.post<void>(API.loanAdd, params)
