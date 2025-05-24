@@ -12,7 +12,7 @@
       <el-form-item label="存款操作">
         <el-row :gutter="12">
           <el-col :span="16">
-            <el-input v-model="depositAmount" placeholder="请输入存款金额" type="number">
+            <el-input v-model="formData.depositAmount" placeholder="请输入存款金额" type="number">
               <template #prepend>魔力值</template>
             </el-input>
           </el-col>
@@ -28,7 +28,7 @@
       <el-form-item label="取款操作">
         <el-row :gutter="12">
           <el-col :span="16">
-            <el-input v-model="withdrawAmount" placeholder="请输入取款金额" type="number">
+            <el-input v-model="formData.withdrawAmount" placeholder="请输入取款金额" type="number">
               <template #prepend>魔力值</template>
             </el-input>
           </el-col>
@@ -44,12 +44,12 @@
       <el-form-item label="贷款操作">
         <el-row :gutter="12">
           <el-col :span="10">
-            <el-input v-model="loanAmt" placeholder="请输入贷款金额" type="number">
+            <el-input v-model="formData.loanAmt" placeholder="请输入贷款金额" type="number">
               <template #prepend>魔力值</template>
             </el-input>
           </el-col>
           <el-col :span="8">
-            <el-input v-model="loanTerm" placeholder="1" type="number">
+            <el-input v-model="formData.loanTerm" placeholder="1" type="number">
               <template #append>月</template>
             </el-input>
           </el-col>
@@ -74,25 +74,31 @@
     </div>
   </el-card>
 </template>
+
 <script setup lang="ts">
-import {ref} from 'vue'
+
+import {reactive} from 'vue'
+
+// 定义 formData 并初始化相关字段
+const formData = reactive({
+  depositAmount: null as number | null,
+  withdrawAmount: null as number | null,
+  loanAmt: null as number | null,
+  loanTerm: 1 as number
+})
+
 import {deposit, drawn, getUserBankDetail, loan} from '@/api/bank'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {eventBus} from '@/utils/eventBus' // 导入事件总线
 
-const depositAmount = ref<number | null>(null)
-const withdrawAmount = ref<number | null>(null)
-const loanAmt = ref<number | null>(null)
-const loanTerm = ref<number | null>(1)
-
 const handleDeposit = async () => {
-  if (!depositAmount.value || depositAmount.value <= 0) {
+  if (!formData.depositAmount || formData.depositAmount <= 0) {
     ElMessage.error('请输入正确的存款金额')
     return
   }
-  let response = await deposit(depositAmount.value)
+  let response = await deposit(formData.depositAmount)
   if (response.code === 0) {
-    ElMessage.success('存款成功,存款金额为: ' + depositAmount.value)
+    ElMessage.success('存款成功,存款金额为: ' + formData.depositAmount)
     await getUserBankDetail()
     eventBus.emit('refreshAccount') // 触发刷新事件
   } else {
@@ -101,13 +107,13 @@ const handleDeposit = async () => {
 }
 
 const handleWithdraw = async () => {
-  if (!withdrawAmount.value || withdrawAmount.value <= 0) {
+  if (!formData.withdrawAmount || formData.withdrawAmount <= 0) {
     ElMessage.error('请输入正确的取款金额')
     return
   }
-  let drawnResponse = await drawn(withdrawAmount.value)
+  let drawnResponse = await drawn(formData.withdrawAmount)
   if (drawnResponse.code === 0) {
-    ElMessage.success('取款成功,取款金额为: ' + withdrawAmount.value);
+    ElMessage.success('取款成功,取款金额为: ' + formData.withdrawAmount);
     await getUserBankDetail()
     eventBus.emit('refreshAccount') // 触发刷新事件
   } else {
@@ -117,49 +123,31 @@ const handleWithdraw = async () => {
 
 const handleLoan = async () => {
   // 分开校验贷款金额
-  if (loanAmt.value === null || loanAmt.value <= 0) {
+  if (formData.loanAmt === null || formData.loanAmt <= 0) {
     ElMessage.error('请输入正确的贷款金额')
     return
   }
 
   // 分开校验贷款期限
-  if (loanTerm.value === null) {
+  if (formData.loanTerm === null) {
     ElMessage.error('贷款期限不能为空')
     return
   }
 
-  if (loanTerm.value < 1 || loanTerm.value > 12) {
+  if (formData.loanTerm < 1 || formData.loanTerm > 12) {
     ElMessage.error('贷款期限必须为1~12个月之间的整数')
     return
   }
-
-  try {
-    ElMessageBox.confirm(
-        `确定申请贷款 ${loanAmt.value} 魔力值，期限为 ${loanTerm.value} 个月吗？`,
-        '贷款确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-        .then(() => {
-          const loanRespone = loan({loanAmt: loanAmt.value, loanTerm: loanTerm.value})
-          if (loanRespone.code === 0) {
-            ElMessage.success(`贷款成功，金额为：${loanAmt.value}，期限：${loanTerm.value} 个月`)
-            getUserBankDetail()
-            eventBus.emit('refreshAccount')
-          } else {
-            ElMessage.error('贷款失败！' + loanRespone.msg)
-          }
-        })
-        .catch(() => {
-          ElMessage({
-            type: 'info',
-            message: 'Delete canceled',
-          })
-        })
-  } catch (e) {
-    ElMessage.info('已取消贷款')
+  const loanResponse = await loan({
+    loanAmt: formData.loanAmt,
+    loanTerm: formData.loanTerm
+  })
+  if (loanResponse.code === 0) {
+    ElMessage.success(`贷款成功，金额为：${formData.loanAmt}，期限：${formData.loanTerm} 个月`)
+    await getUserBankDetail()
+    eventBus.emit('refreshAccount') // 触发刷新事件
+  } else {
+    ElMessage.error('贷款失败！' + loanResponse.msg)
   }
 }
 </script>

@@ -54,7 +54,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { checkAccount, createUserAccount, getUserBankDetail } from '@/api/bank'
 import { formatDate } from '@/utils/date'
-import { ElMessage } from "element-plus";
+import { ElMessage } from 'element-plus';
 import { eventBus } from '@/utils/eventBus' // 导入事件总线
 
 interface AccountInfo {
