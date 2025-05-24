@@ -126,6 +126,9 @@
 import {ref, onMounted} from 'vue';
 import {ElMessage} from 'element-plus';
 
+// 开始抽奖
+import {luckyDraw} from '@/api/lucky'
+
 // 基础数据
 const userTadpoles = ref(381744.3);
 const singleDrawCost = ref(2500);
@@ -319,40 +322,57 @@ const drawPointer = () => {
   ctx.stroke();
 };
 
-
-
-// 开始抽奖
-const startLottery = () => {
-  if (isDrawing.value || userTadpoles.value < singleDrawCost.value) {
-    ElMessage({
-      message: '魔力不足或正在抽奖中！',
-      type: 'warning',
-    });
-    return;
-  }
-
-  isDrawing.value = true;
-  const randomAngle = 360 * 3 + Math.random() * 360;
-  const targetAngle = lotteryConfig.value.startAngle + randomAngle;
-  const step = 5;
-
-  const animate = (currentAngle: number) => {
-    requestAnimationFrame(() => {
-      lotteryConfig.value.startAngle = currentAngle;
-      drawLottery();
-
-      if (currentAngle < targetAngle) {
-        animate(currentAngle + step);
-      } else {
-        isDrawing.value = false;
-        const prizeIndex = getPrizeIndex(targetAngle);
-        handlePrize(prizeIndex);
+const startLottery = async () => {
+      if (isDrawing.value || userTadpoles.value < singleDrawCost.value) {
+        ElMessage({
+          message: '魔力不足或正在抽奖中！',
+          type: 'warning'
+        });
+        return;
       }
-    });
-  };
 
-  animate(lotteryConfig.value.startAngle);
-};
+      isDrawing.value = true;
+
+      try {
+        const res = await luckyDraw({size: 1});
+        debugger;
+
+        if (res.code === 0 && res.data) {
+          // 模拟转盘动画
+          const randomAngle = 360 * 3 + Math.random() * 360; // 随机角度
+          const targetAngle = lotteryConfig.value.startAngle + randomAngle;
+          const step = 5;
+
+          const animate = (currentAngle: number) => {
+            requestAnimationFrame(() => {
+              lotteryConfig.value.startAngle = currentAngle;
+              drawLottery();
+
+              if (currentAngle < targetAngle) {
+                animate(currentAngle + step);
+              } else {
+                isDrawing.value = false;
+                const prizeIndex = getPrizeIndex(targetAngle);
+                handlePrize(prizeIndex, res.data as string); // 处理中奖结果
+              }
+            });
+          };
+          animate(lotteryConfig.value.startAngle);
+          if (res.data.length == 1) {
+            const {prizeName, prizeType, prizeValue, unitName} = res.data[0];
+            prizeType != '99' ? ElMessage.success(`恭喜你获得:${prizeName}${prizeValue}${unitName}`) : ElMessage.warning(`对不起您${prizeName}`);
+          } else {
+            ElMessage.error(res.msg || '抽奖失败');
+            isDrawing.value = false;
+          }
+        }
+      } catch (error) {
+        console.error('抽奖请求失败:', error);
+        ElMessage.error('网络异常，请稍后再试');
+        isDrawing.value = false;
+      }
+    }
+;
 
 // 获取中奖索引
 const getPrizeIndex = (angle: number) => {
@@ -361,24 +381,27 @@ const getPrizeIndex = (angle: number) => {
 };
 
 // 处理中奖结果
-const handlePrize = (index: number) => {
-  const prize = lotteryConfig.value.prizes[index];
+const handlePrize = (index: number, prizeText: string) => {
+  const prizeName = prizeText.split('\n')[0];
+
   logs.value.unshift({
+    id: Date.now(), // 临时ID
     createTime: new Date().toLocaleString(),
     costTadpoles: singleDrawCost.value,
-    prize: prize.split('\n')[0],
+    prize: prizeName
   });
 
-  // 模拟扣除魔力（实际需对接后端）
+  // 扣除魔力
   userTadpoles.value -= singleDrawCost.value;
 
-  // 显示中奖提示
+  // 弹出提示
   ElMessage({
-    message: `恭喜获得：${prize}`,
+    message: `恭喜获得：${prizeText}`,
     type: 'success',
-    duration: 3000,
+    duration: 3000
   });
 };
+
 
 // 连抽逻辑
 const continuousDraw = (count: number) => {

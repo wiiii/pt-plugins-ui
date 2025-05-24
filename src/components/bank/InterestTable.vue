@@ -5,12 +5,16 @@
     </div>
 
     <el-table :data="records" border style="width: 100%">
-      <el-table-column prop="createTime" label="创建时间" width="180"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间" width="180">
+        <template #default="scope">{{ scope.row.createTime }}</template>
+      </el-table-column>
+
       <el-table-column prop="interestMana" label="利息">
         <template #default="scope">
           <span class="amount">{{ scope.row.interestMana }}</span>
         </template>
       </el-table-column>
+
       <el-table-column prop="sendTag" label="是否发放" width="120">
         <template #default="scope">
           <span class="badge" :class="{ success: scope.row.sendTag, warning: !scope.row.sendTag }">
@@ -26,17 +30,70 @@
       <p>暂无利息记录</p>
     </div>
 
-    <el-pagination layout="prev, pager, next" :total="100"></el-pagination>
+    <Pagination
+      :total="pagination.total"
+      :page-num="pagination.pageNum"
+      :page-size="pagination.pageSize"
+      @update:pageNum="pagination.pageNum = $event"
+      @update:pageSize="pagination.pageSize = $event"
+      @change="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue'
+import { getInterestRecords } from '@/api/bank'
+import { ElMessage } from 'element-plus'
+import Pagination from '@/components/common/Pagination.vue'
 
-const records = ref([
-  { createTime: '2025-04-05 14:30', interestMana: '+32.50', sendTag: false },
-  { createTime: '2025-04-05 14:25', interestMana: '+32.50', sendTag: true }
-]);
+// 表格数据
+const records = ref<any[]>([])
+const loading = ref(false)
+
+// 分页参数
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 获取数据
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const response = await getInterestRecords({
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize
+    })
+
+    if (response.code === 0) {
+      records.value = response.data.records.map((item: any) => ({
+        createTime: item.createTime,
+        interestMana: `+${item.interestMana}`,
+        sendTag: item.sendTag === 1
+      }))
+      pagination.total = response.data.total
+    } else {
+      ElMessage.error('获取利息记录失败：' + response.msg)
+    }
+  } catch (error) {
+    console.error('请求失败:', error)
+    ElMessage.error('网络错误，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 分页变化处理
+const handlePageChange = ({ pageNum, pageSize }: { pageNum: number; pageSize: number }) => {
+  pagination.pageNum = pageNum
+  pagination.pageSize = pageSize
+  fetchData()
+}
+
+// 初始化加载
+fetchData()
 </script>
 
 <style scoped>
@@ -107,23 +164,5 @@ const records = ref([
   font-size: 40px;
   color: #ddd;
   margin-bottom: 10px;
-}
-
-.el-pagination {
-  margin-top: 20px;
-  justify-content: flex-end;
-}
-
-.el-pagination .btn-prev,
-.el-pagination .btn-next,
-.el-pagination .el-pager li {
-  background-color: #fafafa;
-  border-color: #ddd;
-  color: #333;
-}
-
-.el-pagination .el-pager li.active {
-  background-color: #1890ff;
-  color: #fff;
 }
 </style>
