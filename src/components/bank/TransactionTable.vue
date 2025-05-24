@@ -5,15 +5,10 @@
     </div>
 
     <el-table :data="records" border style="width: 100%">
-      <el-table-column prop="time" label="时间" width="180"></el-table-column>
-      <el-table-column prop="type" label="类型" width="120">
-        <template #default="scope">
-          <span class="badge" :class="{ primary: scope.row.type === '存款', warning: scope.row.type !== '存款' }">
-            <i class="fas" :class="scope.row.type === '存款' ? 'fa-arrow-circle-up' : 'fa-arrow-circle-down'"></i>
-            {{ scope.row.type }}
-          </span>
-        </template>
+      <el-table-column prop="time" label="时间" width="180">
+        <template #default="scope">{{ scope.row.time }}</template>
       </el-table-column>
+
       <el-table-column prop="amount" label="金额">
         <template #default="scope">
           <span class="amount" :class="{ deposit: scope.row.type === '存款', withdraw: scope.row.type !== '存款' }">
@@ -21,6 +16,20 @@
           </span>
         </template>
       </el-table-column>
+
+      <el-table-column prop="type" label="类型">
+        <template #default="scope">
+          <span class="amount" :class="{ deposit: scope.row.type === '存款', withdraw: scope.row.type !== '存款' }">
+            <i class="fas" :class="{
+              'fa-arrow-circle-up': scope.row.type === '存款',
+              'fa-arrow-circle-down': scope.row.type !== '存款'
+            }"></i>
+            {{ scope.row.type }}
+          </span>
+        </template>
+      </el-table-column>
+
+
     </el-table>
 
     <div v-if="!records.length" class="no-data">
@@ -28,18 +37,79 @@
       <p>暂无交易记录</p>
     </div>
 
-    <el-pagination layout="prev, pager, next" :total="100"></el-pagination>
+    <Pagination
+        :total="pagination.total"
+        :page-num="pagination.pageNum"
+        :page-size="pagination.pageSize"
+        @update:pageNum="pagination.pageNum = $event"
+        @update:pageSize="pagination.pageSize = $event"
+        @change="handlePageChange"
+    />
+
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref, reactive, onActivated} from 'vue'
+import {getDepositAndDrawnRecords} from '@/api/bank'
+import {ElMessage} from 'element-plus'
+import Pagination from '@/components/common/Pagination.vue'
 
-const records = ref([
-  { time: '2025-04-05 14:30', type: '存款', amount: '+500.00' },
-  { time: '2025-04-05 14:25', type: '取款', amount: '-200.00' }
-]);
+
+// 表格数据
+const records = ref<any[]>([])
+const loading = ref(false)
+
+// 分页参数
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 获取数据
+const fetchData = async () => {
+  loading.value = true
+  try {
+    debugger
+    const response = await getDepositAndDrawnRecords({
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize
+    })
+
+    if (response.code === 0) {
+      records.value = response.data.records.map((item: any) => ({
+        time: item.time, // 根据后端返回字段调整
+        type: item.type,
+        amount: item.amount
+      }))
+      pagination.total = response.data.total
+    } else {
+      ElMessage.error('获取数据失败：' + response.msg)
+    }
+  } catch (error) {
+    console.error('请求失败:', error)
+    ElMessage.error('网络错误，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handlePageChange = ({ pageNum, pageSize }: { pageNum: number; pageSize: number }) => {
+  pagination.pageNum = pageNum
+  pagination.pageSize = pageSize
+  fetchData()
+}
+
+
+// 只有在 Tab 激活时才请求数据（仅首次加载）
+onActivated(() => {
+  fetchData()
+})
+
 </script>
+
 
 <style scoped>
 .section {

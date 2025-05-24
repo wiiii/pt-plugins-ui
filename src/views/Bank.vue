@@ -11,19 +11,31 @@
         <!-- 右侧 Tab 内容 -->
         <el-col :span="16" :xs="24" :sm="16" :md="16" :lg="16" :xl="19">
           <el-tabs v-model="activeTab" type="card">
+            <!-- ATM操作台 -->
             <el-tab-pane label="ATM操作台" name="atm">
-              <ATMForm/>
+              <keep-alive>
+                <ATMForm v-if="activeTab === 'atm'" />
+              </keep-alive>
             </el-tab-pane>
+
+            <!-- 存取流水 -->
             <el-tab-pane label="存取流水" name="transaction">
-              <TransactionTable/>
+              <keep-alive>
+                <TransactionTable v-if="activeTab === 'transaction'" />
+              </keep-alive>
             </el-tab-pane>
+
+            <!-- 利息流水 -->
             <el-tab-pane label="利息流水" name="interest">
-              <InterestTable/>
+              <InterestTable v-if="activeTab === 'interest'" />
             </el-tab-pane>
+
+            <!-- 贷款记录 -->
             <el-tab-pane label="贷款记录" name="loan">
-              <LoanTable/>
+              <LoanTable v-if="activeTab === 'loan'" />
             </el-tab-pane>
           </el-tabs>
+
         </el-col>
       </el-row>
     </el-main>
