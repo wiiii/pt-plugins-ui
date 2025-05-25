@@ -87,34 +87,35 @@
             <template #header>
               <h2>抽奖记录</h2>
             </template>
-            <el-table :data="logs" stripe>
+            <el-table :data="records" stripe>
               <el-table-column
                   prop="createTime"
-                  label="创建时间"
+                  label="抽奖时间"
                   align="center"
                   width="200"
               ></el-table-column>
               <el-table-column
-                  prop="costTadpoles"
+                  prop="costMagic"
                   label="花费魔力"
                   align="center"
                   width="150"
               ></el-table-column>
-              <el-table-column
-                  prop="prize"
+              <el-table-column prop="prize"
                   label="中奖结果"
                   align="center"
-              ></el-table-column>
+              >
+                <template #default="scope">
+                  {{ scope.row.prizeType !== '99' ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}` : scope.row.prizeName }}                </template>
+              </el-table-column>
             </el-table>
-            <el-pagination
-                @size-change="handleSizeChange"
-                @current-change="handleCurrentChange"
-                :current-page="currentPage"
-                :page-sizes="[10, 25, 50, 100]"
-                :page-size="pageSize"
-                layout="total, sizes, prev, pager, next"
-                :total="logs.length"
-            ></el-pagination>
+            <Pagination
+                :total="pagination.total"
+                :page-num="pagination.pageNum"
+                :page-size="pagination.pageSize"
+                @update:pageNum="pagination.pageNum = $event"
+                @update:pageSize="pagination.pageSize = $event"
+                @change="handlePageChange"
+            />
           </el-card>
         </div>
       </div>
@@ -123,25 +124,24 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, onMounted} from 'vue';
-import {ElMessage} from 'element-plus';
+import { ref, onMounted ,reactive} from 'vue'
+import { ElMessage } from 'element-plus'
+import { getRecordsByPage, luckyDraw } from '@/api/lucky'
+import { LuckyDrawRecord } from '@/types/lucky'
+import Pagination from "@/components/common/Pagination.vue";
 
-// 开始抽奖
-import {luckyDraw} from '@/api/lucky'
+// 响应式数据
+const userTadpoles = ref(381744.3)
+const singleDrawCost = ref(2500)
+const records = ref<LuckyDrawRecord[]>([])
+const isDrawing = ref(false)
 
-// 基础数据
-const userTadpoles = ref(381744.3);
-const singleDrawCost = ref(2500);
-const logs = ref([
-  {
-    createTime: '2025-05-04 18:09',
-    costTadpoles: 2000,
-    prize: '谢谢参与',
-  },
-]);
-const currentPage = ref(1);
-const pageSize = ref(10);
-const isDrawing = ref(false);
+// 分页参数
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
 
 // 转盘配置
 const lotteryConfig = ref({
@@ -374,6 +374,23 @@ const startLottery = async () => {
     }
 ;
 
+const fetchRecords = async () => {
+  try {
+    const res = await getRecordsByPage(pagination)
+    if (res.code === 0 && res.data.records) {
+      records.value = res.data.records
+      pagination.total = res.data.total || res.data.records.length
+    } else {
+      ElMessage.error(res.msg || '获取记录失败')
+    }
+  } catch (error) {
+    console.error('请求记录失败:', error)
+    ElMessage.error('网络异常，请稍后再试')
+  }
+}
+
+
+
 // 获取中奖索引
 const getPrizeIndex = (angle: number) => {
   const degree = ((angle % 360) + 360) % 360;
@@ -418,17 +435,17 @@ const continuousDraw = (count: number) => {
   }
 };
 
-// 分页处理
-const handleSizeChange = (newSize: number) => {
-  pageSize.value = newSize;
-};
-const handleCurrentChange = (newPage: number) => {
-  currentPage.value = newPage;
-};
+const handlePageChange = ({ pageNum, pageSize }: { pageNum: number; pageSize: number }) => {
+  pagination.pageNum = pageNum
+  pagination.pageSize = pageSize
+  fetchRecords()
+}
+
 
 onMounted(() => {
-  drawLottery();
-  drawPointer();
+  drawLottery()
+  drawPointer()
+  fetchRecords() // 初始化抽奖记录
 });
 </script>
 
