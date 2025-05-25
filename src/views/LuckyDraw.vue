@@ -323,56 +323,50 @@ const drawPointer = () => {
 };
 
 const startLottery = async () => {
-      if (isDrawing.value || userTadpoles.value < singleDrawCost.value) {
-        ElMessage({
-          message: '魔力不足或正在抽奖中！',
-          type: 'warning'
-        });
-        return;
-      }
+  if (isDrawing.value || userTadpoles.value < singleDrawCost.value) {
+    ElMessage({
+      message: '魔力不足或正在抽奖中！',
+      type: 'warning'
+    });
+    return;
+  }
 
-      isDrawing.value = true;
+  isDrawing.value = true;
 
-      try {
-        const res = await luckyDraw({size: 1});
-        debugger;
+  try {
+    const res = await luckyDraw({size: 1});
+    debugger;
 
-        if (res.code === 0 && res.data) {
-          // 模拟转盘动画
-          const randomAngle = 360 * 3 + Math.random() * 360; // 随机角度
-          const targetAngle = lotteryConfig.value.startAngle + randomAngle;
-          const step = 5;
+    if (res.code === 0 && res.data) {
+      // 模拟转盘动画
+      const randomAngle = 360 * 3 + Math.random() * 360; // 随机角度
+      const targetAngle = lotteryConfig.value.startAngle + randomAngle;
+      const step = 5;
 
-          const animate = (currentAngle: number) => {
-            requestAnimationFrame(() => {
-              lotteryConfig.value.startAngle = currentAngle;
-              drawLottery();
+      const animate = (currentAngle: number) => {
+        requestAnimationFrame(() => {
+          lotteryConfig.value.startAngle = currentAngle;
+          drawLottery();
 
-              if (currentAngle < targetAngle) {
-                animate(currentAngle + step);
-              } else {
-                isDrawing.value = false;
-                const prizeIndex = getPrizeIndex(targetAngle);
-                handlePrize(prizeIndex, res.data as string); // 处理中奖结果
-              }
-            });
-          };
-          animate(lotteryConfig.value.startAngle);
-          if (res.data.length == 1) {
-            const {prizeName, prizeType, prizeValue, unitName} = res.data[0];
-            prizeType != '99' ? ElMessage.success(`恭喜你获得:${prizeName}${prizeValue}${unitName}`) : ElMessage.warning(`对不起您${prizeName}`);
+          if (currentAngle < targetAngle) {
+            animate(currentAngle + step);
           } else {
-            ElMessage.error(res.msg || '抽奖失败');
             isDrawing.value = false;
+            const prizeIndex = getPrizeIndex(targetAngle);
+            handlePrize(prizeIndex, res.data[0]); // 处理中奖结果
+            fetchRecords(); // <<<<<<<<< 添加这一行以刷新抽奖记录列表
           }
-        }
-      } catch (error) {
-        console.error('抽奖请求失败:', error);
-        ElMessage.error('网络异常，请稍后再试');
-        isDrawing.value = false;
-      }
+        });
+      };
+      animate(lotteryConfig.value.startAngle);
     }
-;
+  } catch (error) {
+    console.error('抽奖请求失败:', error);
+    ElMessage.error('网络异常，请稍后再试');
+    isDrawing.value = false;
+  }
+};
+
 
 const fetchRecords = async () => {
   try {
@@ -398,27 +392,37 @@ const getPrizeIndex = (angle: number) => {
 };
 
 // 处理中奖结果
-const handlePrize = (index: number, prizeText: string) => {
-  const prizeName = prizeText.split('\n')[0];
-
-  logs.value.unshift({
+const handlePrize = (index: number, res: object) => {
+  const {prizeName, prizeType, prizeValue, unitName} = res;
+  let prizeText = '';
+  if (prizeType == '99'){
+    prizeText = prizeName;
+    // 弹出提示
+    ElMessage({
+      message: `对不起您${prizeText}`,
+      type: 'warning',
+      duration: 3000
+    });
+  } else {
+    prizeText = `${prizeName}${prizeValue}${unitName}`;
+    // 弹出提示
+    ElMessage({
+      message: `恭喜获得：${prizeText}`,
+      type: 'success',
+      duration: 3000
+    });
+  }
+  records.value.unshift({
     id: Date.now(), // 临时ID
     createTime: new Date().toLocaleString(),
     costTadpoles: singleDrawCost.value,
-    prize: prizeName
+    prize: prizeText
   });
 
   // 扣除魔力
   userTadpoles.value -= singleDrawCost.value;
 
-  // 弹出提示
-  ElMessage({
-    message: `恭喜获得：${prizeText}`,
-    type: 'success',
-    duration: 3000
-  });
 };
-
 
 // 连抽逻辑
 const continuousDraw = (count: number) => {

@@ -1,7 +1,7 @@
 <template>
   <el-main class="content-area">
     <div class="page-header">
-      <h1>{{ pageTitle }}</h1>
+      <h1 style="margin-bottom: 20px">{{ pageTitle }}</h1>
       <el-breadcrumb separator="/">
         <el-breadcrumb-item :to="'/'">首页</el-breadcrumb-item>
         <el-breadcrumb-item>{{ pageTitle }}</el-breadcrumb-item>
