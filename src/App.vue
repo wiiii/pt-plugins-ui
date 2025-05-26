@@ -21,6 +21,9 @@ import {ref} from 'vue';
 import Sidebar from '@/components/Sidebar.vue';
 import ContentArea from '@/components/ContentArea.vue';
 
+// c_secure_uid=MTAwMDE%3D; c_secure_pass=939e628cf404074b8ecc224acd99c92e;
+
+
 const isCollapsed = ref(false);
 const toggleCollapse = () => (isCollapsed.value = !isCollapsed.value);
 

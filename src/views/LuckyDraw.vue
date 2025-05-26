@@ -34,24 +34,23 @@
               <h2>基本说明</h2>
             </template>
             <div class="bonus">
-              <p>当前用户拥有魔力：<span class="highlight">{{ userTadpoles }}</span></p>
-              <p>每次抽奖需要魔力：{{ singleDrawCost }}</p>
+              <div class="bonus-item">
+              <span class="bonus-label">
+                <i class="fa-solid fa-bolt text-primary"></i> 当前用户拥有魔力：
+              </span>
+                <span class="highlight">{{ userTadpoles }}</span>
+              </div>
+              <div class="bonus-item">
+              <span class="bonus-label">
+                <i class="fa-solid fa-coins text-primary"></i> 每次抽奖需要魔力：
+              </span>
+                <span>{{ singleDrawCost }}</span>
+              </div>
             </div>
+            <!-- 添加间距 -->
+            <div class="spacing-block"></div>
             <div class="other">
-              <el-collapse>
-                <el-collapse-item title="中奖规则">
-                  <ul>
-                    <li><i class="fa-solid fa-star text-primary"></i> 当中奖 [VIP] 时，如果用户已经是 VIP
-                      或以上等级，奖励魔力：250000
-                    </li>
-                    <li><i class="fa-solid fa-medal text-primary"></i> 当中奖 [勋章] 时，如果用户已经拥有勋章，奖励魔力：100000
-                    </li>
-                    <li><i class="fa-solid fa-pencil text-primary"></i> 当中奖 [改名卡] 时，多次数量不累计，可在个人详情页使用
-                    </li>
-                    <li><i class="fa-solid fa-rainbow text-primary"></i> 当中奖 [彩虹 ID] 时，多次时间累计</li>
-                  </ul>
-                </el-collapse-item>
-              </el-collapse>
+              <PrizeRules></PrizeRules>
             </div>
           </el-card>
 
@@ -101,11 +100,14 @@
                   width="150"
               ></el-table-column>
               <el-table-column prop="prize"
-                  label="中奖结果"
-                  align="center"
+                               label="中奖结果"
+                               align="center"
               >
                 <template #default="scope">
-                  {{ scope.row.prizeType !== '99' ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}` : scope.row.prizeName }}                </template>
+                  {{
+                    scope.row.prizeType !== '99' ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}` : scope.row.prizeName
+                  }}
+                </template>
               </el-table-column>
             </el-table>
             <Pagination
@@ -124,11 +126,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted ,reactive} from 'vue'
-import { ElMessage } from 'element-plus'
-import { getRecordsByPage, luckyDraw } from '@/api/lucky'
-import { LuckyDrawRecord } from '@/types/lucky'
+import {ref, onMounted, reactive} from 'vue'
+import {ElMessage} from 'element-plus'
+import {getRecordsByPage, luckyDraw} from '@/api/lucky'
+import {LuckyDrawRecord} from '@/types/lucky'
 import Pagination from "@/components/common/Pagination.vue";
+import PrizeRules from "@/components/lucky/PrizeRules.vue";
 
 // 响应式数据
 const userTadpoles = ref(381744.3)
@@ -335,7 +338,6 @@ const startLottery = async () => {
 
   try {
     const res = await luckyDraw({size: 1});
-    debugger;
 
     if (res.code === 0 && res.data) {
       // 模拟转盘动画
@@ -384,7 +386,6 @@ const fetchRecords = async () => {
 }
 
 
-
 // 获取中奖索引
 const getPrizeIndex = (angle: number) => {
   const degree = ((angle % 360) + 360) % 360;
@@ -395,7 +396,7 @@ const getPrizeIndex = (angle: number) => {
 const handlePrize = (index: number, res: object) => {
   const {prizeName, prizeType, prizeValue, unitName} = res;
   let prizeText = '';
-  if (prizeType == '99'){
+  if (prizeType == '99') {
     prizeText = prizeName;
     // 弹出提示
     ElMessage({
@@ -412,12 +413,7 @@ const handlePrize = (index: number, res: object) => {
       duration: 3000
     });
   }
-  records.value.unshift({
-    id: Date.now(), // 临时ID
-    createTime: new Date().toLocaleString(),
-    costTadpoles: singleDrawCost.value,
-    prize: prizeText
-  });
+  records.value.unshift(res);
 
   // 扣除魔力
   userTadpoles.value -= singleDrawCost.value;
@@ -425,21 +421,24 @@ const handlePrize = (index: number, res: object) => {
 };
 
 // 连抽逻辑
-const continuousDraw = (count: number) => {
-  if (isDrawing.value || userTadpoles.value < count * singleDrawCost.value) {
+const continuousDraw = async (count: number) => {
+  if (userTadpoles.value < count * singleDrawCost.value) {
     ElMessage({
-      message: '魔力不足或正在抽奖中！',
+      message: '魔力不足！',
       type: 'warning',
     });
     return;
   }
-
-  for (let i = 0; i < count; i++) {
-    startLottery(); // 简化逻辑，实际需处理动画队列
+  debugger;
+  const res = await luckyDraw({size: count});
+  if (res.code === 0 && res.data) {
+    res.data.forEach((item: any) => {
+      handlePrize(getPrizeIndex(item.angle), item);
+    });
   }
 };
 
-const handlePageChange = ({ pageNum, pageSize }: { pageNum: number; pageSize: number }) => {
+const handlePageChange = ({pageNum, pageSize}: { pageNum: number; pageSize: number }) => {
   pagination.pageNum = pageNum
   pagination.pageSize = pageSize
   fetchRecords()
@@ -509,6 +508,39 @@ h1 {
   gap: 20px;
 }
 
+.bonus {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 控制两行之间的间距 */
+}
+
+.bonus-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+.bonus-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.text-primary {
+  color: #409eff;
+}
+
+.highlight {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+
 .left-sidebar {
   display: flex;
   flex-direction: column;
@@ -567,4 +599,9 @@ h1 {
 .text-primary {
   color: #409eff;
 }
+
+.spacing-block {
+  height: 20px; /* 可根据需要调整 */
+}
+
 </style>
