@@ -1,13 +1,13 @@
 <template>
   <div class="pagination">
     <el-pagination
-      layout="prev, pager, next, sizes, ->, slot"
-      :total="total"
-      :page-sizes="[10, 20, 30, 50]"
-      v-model:current-page="currentPage"
-      v-model:page-size="currentPageSize"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
+        v-model:current-page="currentPage"
+        v-model:page-size="currentPageSize"
+        :page-sizes="[50,40,30,20,10]"
+        layout="total, sizes, prev, pager, next"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
     >
       <template #default>
         <span class="pagination-total">
@@ -19,7 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, computed } from 'vue'
+import {defineProps, defineEmits, computed} from 'vue'
+import debounce from 'lodash.debounce'
 
 const props = defineProps<{
   total: number
@@ -43,18 +44,24 @@ const currentPageSize = {
   set: (val: number) => emit('update:pageSize', val)
 }
 
-const handleSizeChange = (size: number) => {
+// 防抖处理
+const debouncedHandleSizeChange = debounce((size: number) => {
   emit('update:pageSize', size)
-  emit('change', { pageNum: props.pageNum, pageSize: size })
+  emit('change', {pageNum: props.pageNum, pageSize: size})
+}, 300)
+
+const handleSizeChange = (size: number) => {
+  debouncedHandleSizeChange(size)
 }
 
 const handleCurrentChange = (page: number) => {
   emit('update:pageNum', page)
-  emit('change', { pageNum: page, pageSize: props.pageSize })
+  emit('change', {pageNum: page, pageSize: props.pageSize})
 }
 
-// 计算总页数
+// 计算总页数，防止除零错误
 const pageCount = computed(() => {
+  if (props.pageSize <= 0) return 0
   return Math.ceil(props.total / props.pageSize)
 })
 </script>

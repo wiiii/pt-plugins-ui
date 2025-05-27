@@ -99,16 +99,30 @@
                   align="center"
                   width="150"
               ></el-table-column>
-              <el-table-column prop="prize"
-                               label="中奖结果"
-                               align="center"
-              >
+              <el-table-column prop="prize" label="中奖结果" align="center">
                 <template #default="scope">
+                <span class="prize-icon-text">
+                  <!-- 根据 prizeType 显示不同的图标 -->
+                  <i v-if="scope.row.prizeType === '01'" class="fa-solid fa-coins icon-magic"></i> <!-- 魔力 -->
+                  <i v-else-if="scope.row.prizeType === '02'" class="fa-solid fa-star icon-vip"></i> <!-- VIP -->
+                  <i v-else-if="scope.row.prizeType === '03'" class="fa-solid fa-pen icon-rename"></i> <!-- 改名卡 -->
+                  <i v-else-if="scope.row.prizeType === '04'" class="fa-solid fa-rainbow icon-rainbow"></i> <!-- 彩虹ID -->
+                  <i v-else-if="scope.row.prizeType === '05'" class="fa-solid fa-calendar-check icon-checkin"></i>
+                  <!-- 补签卡 -->
+                  <i v-else-if="scope.row.prizeType === '06'" class="fa-solid fa-arrow-alt-circle-up icon-upload"></i>
+                  <!-- 上传量 -->
+                  <i v-else-if="scope.row.prizeType === '99'" class="fa-solid fa-times-circle icon-none"></i>
+                  <!-- 谢谢参与 -->
+                  <!-- 显示文字 -->
                   {{
-                    scope.row.prizeType !== '99' ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}` : scope.row.prizeName
+                    scope.row.prizeType !== '99'
+                        ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}`
+                        : scope.row.prizeName
                   }}
+                </span>
                 </template>
               </el-table-column>
+
             </el-table>
             <Pagination
                 :total="pagination.total"
@@ -603,5 +617,21 @@ h1 {
 .spacing-block {
   height: 20px; /* 可根据需要调整 */
 }
+
+.prize-icon-text {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 图标与文字间距 */
+}
+
+/* 图标颜色区分 */
+.icon-magic { color: gold; }
+.icon-vip { color: yellow; }
+.icon-rename { color: #409eff; }
+.icon-rainbow { color: #ff7f50; }
+.icon-checkin { color: #4caf50; }
+.icon-upload { color: #2196f3; }
+.icon-none { color: #ff4d4d; }
+
 
 </style>

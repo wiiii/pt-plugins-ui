@@ -13,12 +13,14 @@
     "axios": "^1.9.0",
     "element-plus": "^2.9.10",
     "element3": "^0.0.40",
+    "lodash.debounce": "^4.0.8",
     "mitt": "^3.0.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@types/lodash.debounce": "^4.0.9",
     "@vitejs/plugin-vue": "^5.2.3",
     "@vue/tsconfig": "^0.7.0",
     "typescript": "~5.8.3",
