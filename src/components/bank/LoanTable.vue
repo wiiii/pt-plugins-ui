@@ -39,7 +39,7 @@
 
       <el-table-column label="总还款额">
         <template #default="scope">
-          <span class="amount repay">{{ Number(scope.row.loanAmt) + 100 }}</span>
+          <span class="amount repay">{{ Number(scope.row.loanAmt) + Number(scope.row.loanInterest) }}</span>
         </template>
       </el-table-column>
 
@@ -96,6 +96,7 @@ const fetchData = async () => {
         loanStatus: item.loanStatus,
         loanAmt: item.loanAmt,
         loanTerm: item.loanTerm,
+        loanInterest: item.loanInterest,
         loanEndDate: item.loanEndDate
       }))
       pagination.total = response.data.total

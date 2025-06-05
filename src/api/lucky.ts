@@ -9,14 +9,19 @@ export type PageParams = {
 }
 
 const API = {
-  getRecordsByPage: '/lucky/luckyDrawRecord/getRecordsByPage',
-  luckyDraw: '/lucky/luckyDraw',
+    getRecordsByPage: '/lucky/luckyDrawRecord/getRecordsByPage',
+    luckyDraw: '/lucky/luckyDraw',
+    getLotteryBasicInfo: '/lucky/getLotteryBasicInfo',
 }
 
 export const getRecordsByPage = (params: PageParams) => {
-  return luckyApi.post<any>(API.getRecordsByPage, params)
+    return luckyApi.post<any>(API.getRecordsByPage, params)
 }
 
 export const luckyDraw = (params: { size?: number }) => {
-  return luckyApi.get<any>(API.luckyDraw, { params })
+    return luckyApi.get<any>(API.luckyDraw, {params})
+}
+
+export const getLotteryBasicInfo = () => {
+    return luckyApi.get<any>(API.getLotteryBasicInfo, {})
 }

@@ -38,13 +38,19 @@
               <span class="bonus-label">
                 <i class="fa-solid fa-bolt text-primary"></i> 当前用户拥有魔力：
               </span>
-                <span class="highlight">{{ userTadpoles }}</span>
+                <span class="highlight">{{ lotteryBasicInfo.seedBonus }}</span>
               </div>
               <div class="bonus-item">
               <span class="bonus-label">
                 <i class="fa-solid fa-coins text-primary"></i> 每次抽奖需要魔力：
               </span>
-                <span>{{ singleDrawCost }}</span>
+                <span>{{ lotteryBasicInfo.costMagic }}</span>
+              </div>
+              <div class="bonus-item">
+              <span class="bonus-label">
+                <i class="fa-solid fa-coins text-primary"></i> 当前折扣：
+              </span>
+                <span>{{ lotteryBasicInfo.discount }}折</span>
               </div>
             </div>
             <!-- 添加间距 -->
@@ -106,7 +112,8 @@
                   <i v-if="scope.row.prizeType === '01'" class="fa-solid fa-coins icon-magic"></i> <!-- 魔力 -->
                   <i v-else-if="scope.row.prizeType === '02'" class="fa-solid fa-star icon-vip"></i> <!-- VIP -->
                   <i v-else-if="scope.row.prizeType === '03'" class="fa-solid fa-pen icon-rename"></i> <!-- 改名卡 -->
-                  <i v-else-if="scope.row.prizeType === '04'" class="fa-solid fa-rainbow icon-rainbow"></i> <!-- 彩虹ID -->
+                  <i v-else-if="scope.row.prizeType === '04'" class="fa-solid fa-rainbow icon-rainbow"></i>
+                  <!-- 彩虹ID -->
                   <i v-else-if="scope.row.prizeType === '05'" class="fa-solid fa-calendar-check icon-checkin"></i>
                   <!-- 补签卡 -->
                   <i v-else-if="scope.row.prizeType === '06'" class="fa-solid fa-arrow-alt-circle-up icon-upload"></i>
@@ -140,16 +147,20 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, onMounted, reactive} from 'vue'
-import {ElMessage} from 'element-plus'
-import {getRecordsByPage, luckyDraw} from '@/api/lucky'
+import {ref, onMounted, reactive, computed} from 'vue'
+import {ElMessage, ElNotification} from 'element-plus'
+import {getLotteryBasicInfo, getRecordsByPage, luckyDraw} from '@/api/lucky'
 import {LuckyDrawRecord} from '@/types/lucky'
 import Pagination from "@/components/common/Pagination.vue";
 import PrizeRules from "@/components/lucky/PrizeRules.vue";
 
 // 响应式数据
-const userTadpoles = ref(381744.3)
-const singleDrawCost = ref(2500)
+let lotteryBasicInfo = ref({
+  userId: 10003,
+  seedBonus: 14535.0,
+  costMagic: 2000,
+  discount: 75.00
+})
 const records = ref<LuckyDrawRecord[]>([])
 const isDrawing = ref(false)
 
@@ -189,6 +200,20 @@ const lotteryConfig = ref({
 
 const lotteryCanvasRef = ref<HTMLCanvasElement | null>(null);
 const pointerCanvasRef = ref<HTMLCanvasElement | null>(null);
+
+const fetchLotteryBasicInfo = async () => {
+  try {
+    const res = await getLotteryBasicInfo()
+    if (res.code === 0 && res.data) {
+      lotteryBasicInfo.value = res.data
+    } else {
+      ElMessage.error(res.msg || '获取客户信息失败')
+    }
+  } catch (error) {
+    console.error('请求记录失败:', error)
+    ElMessage.error('网络异常，请稍后再试')
+  }
+}
 
 // 绘制转盘
 const drawLottery = () => {
@@ -340,7 +365,7 @@ const drawPointer = () => {
 };
 
 const startLottery = async () => {
-  if (isDrawing.value || userTadpoles.value < singleDrawCost.value) {
+  if (isDrawing.value || lotteryBasicInfo.value.seedBonus < lotteryBasicInfo.value.costMagic) {
     ElMessage({
       message: '魔力不足或正在抽奖中！',
       type: 'warning'
@@ -371,6 +396,7 @@ const startLottery = async () => {
             const prizeIndex = getPrizeIndex(targetAngle);
             handlePrize(prizeIndex, res.data[0]); // 处理中奖结果
             fetchRecords(); // <<<<<<<<< 添加这一行以刷新抽奖记录列表
+            fetchLotteryBasicInfo()
           }
         });
       };
@@ -382,7 +408,6 @@ const startLottery = async () => {
     isDrawing.value = false;
   }
 };
-
 
 const fetchRecords = async () => {
   try {
@@ -412,43 +437,73 @@ const handlePrize = (index: number, res: object) => {
   let prizeText = '';
   if (prizeType == '99') {
     prizeText = prizeName;
-    // 弹出提示
-    ElMessage({
-      message: `对不起您${prizeText}`,
-      type: 'warning',
-      duration: 3000
-    });
   } else {
     prizeText = `${prizeName}${prizeValue}${unitName}`;
-    // 弹出提示
-    ElMessage({
-      message: `恭喜获得：${prizeText}`,
-      type: 'success',
-      duration: 3000
-    });
   }
-  records.value.unshift(res);
-
-  // 扣除魔力
-  userTadpoles.value -= singleDrawCost.value;
-
+  return prizeText;
 };
 
 // 连抽逻辑
 const continuousDraw = async (count: number) => {
-  if (userTadpoles.value < count * singleDrawCost.value) {
+  let costRealMagic = lotteryBasicInfo.value.costMagic * count * lotteryBasicInfo.value.discount * 0.01;
+  if (lotteryBasicInfo.value.seedBonus < costRealMagic) {
     ElMessage({
       message: '魔力不足！',
       type: 'warning',
     });
     return;
   }
-  debugger;
+  debugger
   const res = await luckyDraw({size: count});
   if (res.code === 0 && res.data) {
+    const summary: Record<string, { count: number; iconClass: string; iconStyleClass: string }> = {};
+
     res.data.forEach((item: any) => {
-      handlePrize(getPrizeIndex(item.angle), item);
+      const prizeText = handlePrize(getPrizeIndex(item.angle), item);
+      const prizeType = item.prizeType;
+
+      // 定义不同 prizeType 对应的图标类名 & 颜色类名
+      const iconMap: Record<string, { iconClass: string; iconStyleClass: string }> = {
+        '01': { iconClass: 'fa-solid fa-coins', iconStyleClass: 'icon-magic' },       // 魔力
+        '02': { iconClass: 'fa-solid fa-star', iconStyleClass: 'icon-vip' },          // VIP
+        '03': { iconClass: 'fa-solid fa-pen', iconStyleClass: 'icon-rename' },        // 改名卡
+        '04': { iconClass: 'fa-solid fa-rainbow', iconStyleClass: 'icon-rainbow' },   // 彩虹ID
+        '05': { iconClass: 'fa-solid fa-calendar-check', iconStyleClass: 'icon-checkin' }, // 补签卡
+        '06': { iconClass: 'fa-solid fa-arrow-alt-circle-up', iconStyleClass: 'icon-upload' }, // 上传量
+        '99': { iconClass: 'fa-solid fa-times-circle', iconStyleClass: 'icon-none' },  // 谢谢参与
+      };
+
+      const { iconClass, iconStyleClass } = iconMap[prizeType] || {
+        iconClass: '',
+        iconStyleClass: ''
+      };
+
+      if (summary[prizeText]) {
+        summary[prizeText].count += 1;
+      } else {
+        summary[prizeText] = { count: 1, iconClass, iconStyleClass };
+      }
     });
+
+    // 构建带图标的 HTML 消息，使用 class 而不是 inline style
+    const summaryMessage = Object.entries(summary)
+        .map(([prize, { count, iconClass, iconStyleClass }]) => {
+          return `<div style="margin: 4px 0;">
+                  <i class="${iconClass} ${iconStyleClass}"></i>&nbsp;
+                  ${prize} x ${count}                </div>`;
+        })
+        .join('');
+
+    ElNotification({
+      title: '连抽中奖结果',
+      dangerouslyUseHTMLString: true,
+      message: summaryMessage,
+      duration: 4000,
+      type: 'success',
+      showClose: true,
+    });
+
+    await fetchLotteryBasicInfo();
   }
 };
 
@@ -463,6 +518,7 @@ onMounted(() => {
   drawLottery()
   drawPointer()
   fetchRecords() // 初始化抽奖记录
+  fetchLotteryBasicInfo();
 });
 </script>
 
@@ -625,13 +681,33 @@ h1 {
 }
 
 /* 图标颜色区分 */
-.icon-magic { color: gold; }
-.icon-vip { color: yellow; }
-.icon-rename { color: #409eff; }
-.icon-rainbow { color: #ff7f50; }
-.icon-checkin { color: #4caf50; }
-.icon-upload { color: #2196f3; }
-.icon-none { color: #ff4d4d; }
+.icon-magic {
+  color: gold;
+}
+
+.icon-vip {
+  color: yellow;
+}
+
+.icon-rename {
+  color: #409eff;
+}
+
+.icon-rainbow {
+  color: #ff7f50;
+}
+
+.icon-checkin {
+  color: #4caf50;
+}
+
+.icon-upload {
+  color: #2196f3;
+}
+
+.icon-none {
+  color: #ff4d4d;
+}
 
 
 </style>

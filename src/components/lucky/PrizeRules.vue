@@ -15,7 +15,7 @@ import { ref } from 'vue';
 const rules = ref([
   {
     icon: 'fa-solid fa-star text-primary',
-    description: '当中奖 [VIP] 时，如果用户已经是 VIP 或以上等级，奖励魔力：250000'
+    description: '当中奖 [VIP] 时，如果用户已经是 [VIP]，VIP时间累加'
   },
   {
     icon: 'fa-solid fa-medal text-primary',
