@@ -12,6 +12,7 @@ const API = {
     getRecordsByPage: '/lucky/luckyDrawRecord/getRecordsByPage',
     luckyDraw: '/lucky/luckyDraw',
     getLotteryBasicInfo: '/lucky/getLotteryBasicInfo',
+    listLuckyPrizeConfig: '/lucky/luckyPrizeConfig/list',
 }
 
 export const getRecordsByPage = (params: PageParams) => {
@@ -24,4 +25,7 @@ export const luckyDraw = (params: { size?: number }) => {
 
 export const getLotteryBasicInfo = () => {
     return luckyApi.get<any>(API.getLotteryBasicInfo, {})
+}
+export const listLuckyPrizeConfig = () => {
+    return luckyApi.get<any>(API.listLuckyPrizeConfig, {})
 }

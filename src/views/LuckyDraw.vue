@@ -35,21 +35,21 @@
             </template>
             <div class="bonus">
               <div class="bonus-item">
-              <span class="bonus-label">
-                <i class="fa-solid fa-bolt text-primary"></i> 当前用户拥有魔力：
-              </span>
+                <span class="bonus-label">
+                  <i class="fa-solid fa-bolt text-primary"></i> 当前用户拥有魔力：
+                </span>
                 <span class="highlight">{{ lotteryBasicInfo.seedBonus }}</span>
               </div>
               <div class="bonus-item">
-              <span class="bonus-label">
-                <i class="fa-solid fa-coins text-primary"></i> 每次抽奖需要魔力：
-              </span>
+                <span class="bonus-label">
+                  <i class="fa-solid fa-coins text-primary"></i> 每次抽奖需要魔力：
+                </span>
                 <span>{{ lotteryBasicInfo.costMagic }}</span>
               </div>
               <div class="bonus-item">
-              <span class="bonus-label">
-                <i class="fa-solid fa-coins text-primary"></i> 当前折扣：
-              </span>
+                <span class="bonus-label">
+                  <i class="fa-solid fa-coins text-primary"></i> 当前折扣：
+                </span>
                 <span>{{ lotteryBasicInfo.discount }}折</span>
               </div>
             </div>
@@ -107,26 +107,26 @@
               ></el-table-column>
               <el-table-column prop="prize" label="中奖结果" align="center">
                 <template #default="scope">
-                <span class="prize-icon-text">
-                  <!-- 根据 prizeType 显示不同的图标 -->
-                  <i v-if="scope.row.prizeType === '01'" class="fa-solid fa-coins icon-magic"></i> <!-- 魔力 -->
-                  <i v-else-if="scope.row.prizeType === '02'" class="fa-solid fa-star icon-vip"></i> <!-- VIP -->
-                  <i v-else-if="scope.row.prizeType === '03'" class="fa-solid fa-pen icon-rename"></i> <!-- 改名卡 -->
-                  <i v-else-if="scope.row.prizeType === '04'" class="fa-solid fa-rainbow icon-rainbow"></i>
-                  <!-- 彩虹ID -->
-                  <i v-else-if="scope.row.prizeType === '05'" class="fa-solid fa-calendar-check icon-checkin"></i>
-                  <!-- 补签卡 -->
-                  <i v-else-if="scope.row.prizeType === '06'" class="fa-solid fa-arrow-alt-circle-up icon-upload"></i>
-                  <!-- 上传量 -->
-                  <i v-else-if="scope.row.prizeType === '99'" class="fa-solid fa-times-circle icon-none"></i>
-                  <!-- 谢谢参与 -->
-                  <!-- 显示文字 -->
-                  {{
-                    scope.row.prizeType !== '99'
-                        ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}`
-                        : scope.row.prizeName
-                  }}
-                </span>
+                  <span class="prize-icon-text">
+                    <!-- 根据 prizeType 显示不同的图标 -->
+                    <i v-if="scope.row.prizeType === '01'" class="fa-solid fa-coins icon-magic"></i> <!-- 魔力 -->
+                    <i v-else-if="scope.row.prizeType === '02'" class="fa-solid fa-star icon-vip"></i> <!-- VIP -->
+                    <i v-else-if="scope.row.prizeType === '03'" class="fa-solid fa-pen icon-rename"></i> <!-- 改名卡 -->
+                    <i v-else-if="scope.row.prizeType === '04'" class="fa-solid fa-rainbow icon-rainbow"></i>
+                    <!-- 彩虹ID -->
+                    <i v-else-if="scope.row.prizeType === '05'" class="fa-solid fa-calendar-check icon-checkin"></i>
+                    <!-- 补签卡 -->
+                    <i v-else-if="scope.row.prizeType === '06'" class="fa-solid fa-arrow-alt-circle-up icon-upload"></i>
+                    <!-- 上传量 -->
+                    <i v-else-if="scope.row.prizeType === '99'" class="fa-solid fa-times-circle icon-none"></i>
+                    <!-- 谢谢参与 -->
+                    <!-- 显示文字 -->
+                    {{
+                      scope.row.prizeType !== '99'
+                          ? `${scope.row.prizeName} ${scope.row.prizeValue} ${scope.row.unitName}`
+                          : scope.row.prizeName
+                    }}
+                  </span>
                 </template>
               </el-table-column>
 
@@ -147,79 +147,119 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, onMounted, reactive, computed} from 'vue'
-import {ElMessage, ElNotification} from 'element-plus'
-import {getLotteryBasicInfo, getRecordsByPage, luckyDraw} from '@/api/lucky'
-import {LuckyDrawRecord} from '@/types/lucky'
+import {ref, onMounted, reactive, computed} from 'vue';
+import {ElMessage, ElNotification} from 'element-plus';
+import {getLotteryBasicInfo, getRecordsByPage, listLuckyPrizeConfig, luckyDraw} from '@/api/lucky';
+import {LuckyDrawRecord} from '@/types/lucky';
 import Pagination from "@/components/common/Pagination.vue";
 import PrizeRules from "@/components/lucky/PrizeRules.vue";
 
-// 响应式数据
-let lotteryBasicInfo = ref({
+// 常量定义
+const DEFAULT_USER_INFO = {
   userId: 10003,
   seedBonus: 14535.0,
   costMagic: 2000,
   discount: 75.00
-})
-const records = ref<LuckyDrawRecord[]>([])
-const isDrawing = ref(false)
+};
 
-// 分页参数
-const pagination = reactive({
+const DEFAULT_PAGINATION = {
   pageNum: 1,
   pageSize: 10,
   total: 0
-})
+};
 
-// 转盘配置
-const lotteryConfig = ref({
+const DEFAULT_LOTTERY_CONFIG = {
   radius: 280,
   centerX: 300,
   centerY: 300,
-  startAngle: -90,
+  startAngle: -90, // 默认从 12 点方向开始
+  pointerDirectionOffset: 0, // 指针方向相对于起始角的偏移量（单位：度），默认为 0 表示正上方
   colors: [
     '#FFE4E1', '#FFD700', '#F0E68C', '#90EE90',
     '#87CEEB', '#E6E6FA', '#FFB6C1', '#FFA500',
     '#40E0D0', '#EE82EE', '#F08080', '#483D8B',
   ],
-  prizes: [
-    'VIP\n奖励250000魔力',
-    '勋章\n奖励100000魔力',
-    '改名卡\n单次有效',
-    '彩虹ID\n时间累计',
-    '补签卡\n1张',
-    '上传量\n+10068',
-    '谢谢参与',
-    '魔力\n+808',
-    '勋章\n1枚',
-    '上传量\n+808',
-    '彩虹ID\n1天',
-    'VIP\n1天',
-  ],
-});
+  prizes: [],
+  prizesConfig: []
+};
+
+// 响应式数据
+let lotteryBasicInfo = ref(DEFAULT_USER_INFO);
+const records = ref<LuckyDrawRecord[]>([]);
+const isDrawing = ref(false);
+
+// 分页参数
+const pagination = reactive(DEFAULT_PAGINATION);
+
+// 转盘配置
+const lotteryConfig = ref(DEFAULT_LOTTERY_CONFIG);
+
+const isResetNeeded = ref(false); // 是否需要复位（即是否已抽奖过）
 
 const lotteryCanvasRef = ref<HTMLCanvasElement | null>(null);
 const pointerCanvasRef = ref<HTMLCanvasElement | null>(null);
 
+
+// 通用错误处理函数
+const handleApiError = (error: any, message: string) => {
+  console.error(message, error);
+  ElMessage.error('网络异常，请稍后再试');
+};
+
 const fetchLotteryBasicInfo = async () => {
   try {
-    const res = await getLotteryBasicInfo()
+    const res = await getLotteryBasicInfo();
     if (res.code === 0 && res.data) {
-      lotteryBasicInfo.value = res.data
+      lotteryBasicInfo.value = res.data;
     } else {
-      ElMessage.error(res.msg || '获取客户信息失败')
+      ElMessage.error(res.msg || '获取客户信息失败');
     }
   } catch (error) {
-    console.error('请求记录失败:', error)
-    ElMessage.error('网络异常，请稍后再试')
+    handleApiError(error, '请求记录失败:');
   }
-}
+};
+
+const fetchLuckyPrizeConfig = async () => {
+  try {
+    const res = await listLuckyPrizeConfig();
+    if (res.code === 0 && res.data) {
+      lotteryConfig.value.prizes = res.data;
+
+      // ✅ 动态分配 index，确保 index=0 是第一个绘制的扇区（12点方向）
+      lotteryConfig.value.prizesConfig = res.data.map((item: any, index: number) => ({
+        id: item.id,
+        name: item.name + item.value + item.unitName,
+        index: index
+      }));
+      drawLottery();
+      drawPointer();
+    } else {
+      ElMessage.error(res.msg || '获取奖品配置失败');
+    }
+  } catch (error) {
+    handleApiError(error, '请求奖品配置失败:');
+  }
+};
+
+const getPrizeIndexById = (prizeId: number): number => {
+  const prizeConfig = lotteryConfig.value.prizesConfig.find(p => p.id === prizeId);
+  if (!prizeConfig) {
+    ElMessage.error('未找到对应奖品配置');
+    return 0;
+  }
+
+  const {index} = prizeConfig;
+  return index;
+};
 
 // 绘制转盘
 const drawLottery = () => {
   if (!lotteryCanvasRef.value) return;
   const ctx = lotteryCanvasRef.value.getContext('2d');
-  const {centerX, centerY, radius, startAngle, colors, prizes} = lotteryConfig.value;
+  const {centerX, centerY, radius, startAngle, prizes} = lotteryConfig.value;
+  const totalPrizes = prizes.length;
+  const colors = lotteryConfig.value.colors.slice(0, totalPrizes);
+  const anglePerPrize = 360 / totalPrizes; // 每个扇区角度
 
   // 背景圆
   ctx.clearRect(0, 0, 600, 600);
@@ -233,9 +273,9 @@ const drawLottery = () => {
 
   // 绘制扇形和文字
   colors.forEach((color, index) => {
-    const angle = 30 * index;
+    const angle = anglePerPrize * index;
     const start = (startAngle + angle) * Math.PI / 180;
-    const end = (startAngle + angle + 30) * Math.PI / 180;
+    const end = (startAngle + angle + anglePerPrize) * Math.PI / 180;
 
     // 绘制扇形背景
     ctx.beginPath();
@@ -259,7 +299,16 @@ const drawLottery = () => {
     const textY = centerY + textRadius * Math.sin(textAngle);
 
     // 分割文本并分行显示
-    const lines = prizes[index].split('\n');
+    const {name, value, unitName} = prizes[index];
+    const lines: any = [];
+    if (name === '未中奖') {
+      lines.push(name);
+      lines.push('');
+    } else {
+      lines.push(name);
+      lines.push(`${value}${unitName}`);
+    }
+
     const lineHeight = 22;
 
     // 根据背景颜色智能选择文字颜色，确保对比度
@@ -277,6 +326,7 @@ const drawLottery = () => {
 
       // 再绘制文字
       ctx.fillStyle = textColor;
+      // ctx.fillText(`idx:${index}`, textX, textY);
       ctx.fillText(line, textX, textY + yOffset);
     });
 
@@ -364,12 +414,52 @@ const drawPointer = () => {
   ctx.stroke();
 };
 
+const resetLottery = () => {
+  debugger;
+  if (isDrawing.value) return;
+
+  const resetAngle = -90; // 初始角度
+  const currentAngle = lotteryConfig.value.startAngle;
+
+  if (Math.abs(currentAngle - resetAngle) < 1) {
+    // 已经在初始角度，无需复位
+    isResetNeeded.value = false;
+    ElMessage.info('请再次点击以开始新一轮抽奖');
+    return;
+  }
+
+  isDrawing.value = true;
+
+  const animateReset = (current: number) => {
+    requestAnimationFrame(() => {
+      if (Math.abs(current - resetAngle) > 1) {
+        const step = (resetAngle - current) * 0.2; // 缓动效果
+        lotteryConfig.value.startAngle += step;
+        drawLottery();
+        animateReset(lotteryConfig.value.startAngle);
+      } else {
+        lotteryConfig.value.startAngle = resetAngle;
+        drawLottery();
+        isResetNeeded.value = false;
+        isDrawing.value = false;
+        ElMessage.success('转盘已复位，请再次点击抽奖');
+      }
+    });
+  };
+
+  animateReset(currentAngle);
+};
+
+
 const startLottery = async () => {
   if (isDrawing.value || lotteryBasicInfo.value.seedBonus < lotteryBasicInfo.value.costMagic) {
-    ElMessage({
-      message: '魔力不足或正在抽奖中！',
-      type: 'warning'
-    });
+    ElMessage.warning('魔力不足或正在抽奖中！');
+    return;
+  }
+
+  if (isResetNeeded.value) {
+    // 如果已经抽过奖，则需要先复位
+    resetLottery();
     return;
   }
 
@@ -379,63 +469,70 @@ const startLottery = async () => {
     const res = await luckyDraw({size: 1});
 
     if (res.code === 0 && res.data) {
-      // 模拟转盘动画
-      const randomAngle = 360 * 3 + Math.random() * 360; // 随机角度
-      const targetAngle = lotteryConfig.value.startAngle + randomAngle;
-      const step = 5;
+      debugger
+      const prizeId = res.data[0].prizeId;
+      const prizeIndex = getPrizeIndexById(prizeId); // 获取 Canvas.index
 
+      const totalPrizes = lotteryConfig.value.prizes.length;
+      const anglePerPrize = 360 / totalPrizes;
+
+      // 计算目标扇区中心角
+      const sectorCenter = (prizeIndex + 0.5) * anglePerPrize;
+      const targetSectorCenter = 360 - sectorCenter + lotteryConfig.value.startAngle;
+      // 计算增量和最终角度
+      const fullRotation = 360 * 3; // 固定旋转圈数
+      const finalTargetAngle = fullRotation + targetSectorCenter;
+
+      console.log("奖品:", JSON.stringify(res.data[0]));
+      console.log("最终角度:", finalTargetAngle % 360);
+      console.log("对应扇区:", Math.floor((finalTargetAngle % 360) / anglePerPrize));
+
+      // 动画函数
       const animate = (currentAngle: number) => {
         requestAnimationFrame(() => {
-          lotteryConfig.value.startAngle = currentAngle;
-          drawLottery();
-
-          if (currentAngle < targetAngle) {
-            animate(currentAngle + step);
+          if (currentAngle < finalTargetAngle) {
+            lotteryConfig.value.startAngle = currentAngle;
+            drawLottery();
+            animate(currentAngle + 5); // 控制速度
           } else {
+            lotteryConfig.value.startAngle = finalTargetAngle;
+            drawLottery(); // 最后一帧强制重绘
             isDrawing.value = false;
-            const prizeIndex = getPrizeIndex(targetAngle);
-            handlePrize(prizeIndex, res.data[0]); // 处理中奖结果
-            fetchRecords(); // <<<<<<<<< 添加这一行以刷新抽奖记录列表
-            fetchLotteryBasicInfo()
+            isResetNeeded.value = true; // 抽奖完成后设置为“需要复位”
+            let prize = handlePrize(res.data[0]);
+            ElMessage.success(`中奖结果:${prize}`);
+            fetchRecords();
+            fetchLotteryBasicInfo();
           }
         });
       };
       animate(lotteryConfig.value.startAngle);
     }
   } catch (error) {
-    console.error('抽奖请求失败:', error);
-    ElMessage.error('网络异常，请稍后再试');
+    handleApiError(error, '抽奖请求失败:');
     isDrawing.value = false;
   }
 };
 
 const fetchRecords = async () => {
   try {
-    const res = await getRecordsByPage(pagination)
+    const res = await getRecordsByPage(pagination);
     if (res.code === 0 && res.data.records) {
-      records.value = res.data.records
-      pagination.total = res.data.total || res.data.records.length
+      records.value = res.data.records;
+      pagination.total = res.data.total || res.data.records.length;
     } else {
-      ElMessage.error(res.msg || '获取记录失败')
+      ElMessage.error(res.msg || '获取记录失败');
     }
   } catch (error) {
-    console.error('请求记录失败:', error)
-    ElMessage.error('网络异常，请稍后再试')
+    handleApiError(error, '请求记录失败:');
   }
-}
-
-
-// 获取中奖索引
-const getPrizeIndex = (angle: number) => {
-  const degree = ((angle % 360) + 360) % 360;
-  return Math.floor(degree / 30);
 };
 
 // 处理中奖结果
-const handlePrize = (index: number, res: object) => {
+const handlePrize = (res: any) => {
   const {prizeName, prizeType, prizeValue, unitName} = res;
   let prizeText = '';
-  if (prizeType == '99') {
+  if (prizeType === '99') {
     prizeText = prizeName;
   } else {
     prizeText = `${prizeName}${prizeValue}${unitName}`;
@@ -453,27 +550,26 @@ const continuousDraw = async (count: number) => {
     });
     return;
   }
-  debugger
   const res = await luckyDraw({size: count});
   if (res.code === 0 && res.data) {
     const summary: Record<string, { count: number; iconClass: string; iconStyleClass: string }> = {};
 
     res.data.forEach((item: any) => {
-      const prizeText = handlePrize(getPrizeIndex(item.angle), item);
+      const prizeText = handlePrize(item);
       const prizeType = item.prizeType;
 
       // 定义不同 prizeType 对应的图标类名 & 颜色类名
       const iconMap: Record<string, { iconClass: string; iconStyleClass: string }> = {
-        '01': { iconClass: 'fa-solid fa-coins', iconStyleClass: 'icon-magic' },       // 魔力
-        '02': { iconClass: 'fa-solid fa-star', iconStyleClass: 'icon-vip' },          // VIP
-        '03': { iconClass: 'fa-solid fa-pen', iconStyleClass: 'icon-rename' },        // 改名卡
-        '04': { iconClass: 'fa-solid fa-rainbow', iconStyleClass: 'icon-rainbow' },   // 彩虹ID
-        '05': { iconClass: 'fa-solid fa-calendar-check', iconStyleClass: 'icon-checkin' }, // 补签卡
-        '06': { iconClass: 'fa-solid fa-arrow-alt-circle-up', iconStyleClass: 'icon-upload' }, // 上传量
-        '99': { iconClass: 'fa-solid fa-times-circle', iconStyleClass: 'icon-none' },  // 谢谢参与
+        '01': {iconClass: 'fa-solid fa-coins', iconStyleClass: 'icon-magic'},       // 魔力
+        '02': {iconClass: 'fa-solid fa-star', iconStyleClass: 'icon-vip'},          // VIP
+        '03': {iconClass: 'fa-solid fa-pen', iconStyleClass: 'icon-rename'},        // 改名卡
+        '04': {iconClass: 'fa-solid fa-rainbow', iconStyleClass: 'icon-rainbow'},   // 彩虹ID
+        '05': {iconClass: 'fa-solid fa-calendar-check', iconStyleClass: 'icon-checkin'}, // 补签卡
+        '06': {iconClass: 'fa-solid fa-arrow-alt-circle-up', iconStyleClass: 'icon-upload'}, // 上传量
+        '99': {iconClass: 'fa-solid fa-times-circle', iconStyleClass: 'icon-none'},  // 谢谢参与
       };
 
-      const { iconClass, iconStyleClass } = iconMap[prizeType] || {
+      const {iconClass, iconStyleClass} = iconMap[prizeType] || {
         iconClass: '',
         iconStyleClass: ''
       };
@@ -481,16 +577,17 @@ const continuousDraw = async (count: number) => {
       if (summary[prizeText]) {
         summary[prizeText].count += 1;
       } else {
-        summary[prizeText] = { count: 1, iconClass, iconStyleClass };
+        summary[prizeText] = {count: 1, iconClass, iconStyleClass};
       }
     });
 
     // 构建带图标的 HTML 消息，使用 class 而不是 inline style
     const summaryMessage = Object.entries(summary)
-        .map(([prize, { count, iconClass, iconStyleClass }]) => {
+        .map(([prize, {count, iconClass, iconStyleClass}]) => {
           return `<div style="margin: 4px 0;">
                   <i class="${iconClass} ${iconStyleClass}"></i>&nbsp;
-                  ${prize} x ${count}                </div>`;
+                  ${prize} x ${count}
+                </div>`;
         })
         .join('');
 
@@ -508,17 +605,15 @@ const continuousDraw = async (count: number) => {
 };
 
 const handlePageChange = ({pageNum, pageSize}: { pageNum: number; pageSize: number }) => {
-  pagination.pageNum = pageNum
-  pagination.pageSize = pageSize
-  fetchRecords()
-}
-
+  pagination.pageNum = pageNum;
+  pagination.pageSize = pageSize;
+  fetchRecords();
+};
 
 onMounted(() => {
-  drawLottery()
-  drawPointer()
-  fetchRecords() // 初始化抽奖记录
+  fetchRecords(); // 初始化抽奖记录
   fetchLotteryBasicInfo();
+  fetchLuckyPrizeConfig();
 });
 </script>
 
@@ -610,7 +705,6 @@ h1 {
   font-weight: bold;
 }
 
-
 .left-sidebar {
   display: flex;
   flex-direction: column;
@@ -643,8 +737,9 @@ h1 {
   line-height: 26px;
 }
 
-
-.info-card, .continuous-card, .record-container {
+.info-card,
+.continuous-card,
+.record-container {
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
@@ -708,6 +803,4 @@ h1 {
 .icon-none {
   color: #ff4d4d;
 }
-
-
 </style>
